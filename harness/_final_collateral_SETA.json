@@ -1,0 +1,16 @@
+{
+ "text_content": {
+  "baseline": 0.8737439829484945,
+  "patched": 0.8712400840695828,
+  "delta_pts": -0.2503898878911781,
+  "n": 506
+ },
+ "chart": {
+  "baseline": 0.6379934912505335,
+  "patched": 0.6593060890596102,
+  "delta_pts": 2.1312597809076683,
+  "n": 568
+ },
+ "tables_changed": 0,
+ "tables_checked": 1074
+}

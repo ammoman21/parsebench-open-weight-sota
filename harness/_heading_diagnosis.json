@@ -1,0 +1,70 @@
+{
+ "heading_levels": {
+  "1": 3780,
+  "3": 1
+ },
+ "docs_with_headings": 453,
+ "pre_promote_levels": {
+  "1": 990
+ },
+ "post_promote_levels": {
+  "1": 2174
+ },
+ "element_categories": {
+  "Page-header": 373,
+  "Title": 986,
+  "Text": 3818,
+  "Caption": 12,
+  "List-item": 1192,
+  "Table": 14,
+  "Page-footer": 438,
+  "Formula": 6,
+  "Footnote": 63,
+  "Picture": 1
+ },
+ "multiline_title_elements": 67,
+ "orphan_continuation_lines": 96,
+ "failure_breakdown": {
+  "is_bold": {
+   "n_eval": 2066,
+   "n_pass": 763,
+   "reasons": {
+    "standalone_gated": 122,
+    "in_table": 54,
+    "inline_merged": 825,
+    "missing": 240,
+    "own_line_not_standalone": 51,
+    "present_multiline": 11
+   },
+   "gates": {
+    "ends_with_terminal_punct": 36,
+    "too_many_words(>12)": 63,
+    "no_ascii_letters": 4,
+    "leading_capital_gate": 3,
+    "looks_like_list": 5,
+    "label_value_pattern": 11
+   }
+  },
+  "is_title": {
+   "n_eval": 1872,
+   "n_pass": 1327,
+   "reasons": {
+    "standalone_gated": 143,
+    "missing": 245,
+    "in_table": 3,
+    "inline_merged": 73,
+    "own_line_not_standalone": 51,
+    "present_multiline": 17,
+    "already_heading": 13
+   },
+   "gates": {
+    "ends_with_terminal_punct": 47,
+    "too_many_words(>12)": 67,
+    "leading_capital_gate": 3,
+    "label_value_pattern": 13,
+    "no_ascii_letters": 8,
+    "looks_like_list": 5
+   }
+  }
+ }
+}

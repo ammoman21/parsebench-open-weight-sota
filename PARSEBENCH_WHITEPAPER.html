@@ -1,0 +1,401 @@
+<title>ParseBench: Path to a Published Result — Working Paper</title>
+<style>
+  :root {
+    --paper: #F7F6F3; --card: #FFFFFF; --ink: #1B2430; --ink-2: #3E4A57; --ink-3: #6B7682;
+    --rule: #DFDCD5; --file-blue: #1F5C8B; --file-blue-2: #17486D; --blue-wash: #EAF1F7;
+    --gain: #2D6A4F; --gain-wash: #E8F1EC; --loss: #9C4221; --loss-wash: #F7EAE4;
+    --warn: #8A6A16; --warn-wash: #F6F0DE; --mono-bg: #F0EEE9;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #12171C; --card: #191F26; --ink: #E6EAEE; --ink-2: #B3BDC7; --ink-3: #83909C;
+      --rule: #2A333C; --file-blue: #6FB4E8; --file-blue-2: #8CC6F2; --blue-wash: #13232F;
+      --gain: #6FCF9B; --gain-wash: #12241B; --loss: #E38A66; --loss-wash: #2A1811;
+      --warn: #DCB05A; --warn-wash: #241F10; --mono-bg: #1E252C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #12171C; --card: #191F26; --ink: #E6EAEE; --ink-2: #B3BDC7; --ink-3: #83909C;
+    --rule: #2A333C; --file-blue: #6FB4E8; --file-blue-2: #8CC6F2; --blue-wash: #13232F;
+    --gain: #6FCF9B; --gain-wash: #12241B; --loss: #E38A66; --loss-wash: #2A1811;
+    --warn: #DCB05A; --warn-wash: #241F10; --mono-bg: #1E252C;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 16.5px; line-height: 1.63; margin: 0; -webkit-font-smoothing: antialiased; }
+  .sheet { max-width: 50rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+
+  h1, h2 { font-family: "Palatino", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    color: var(--ink); line-height: 1.16; text-wrap: balance; font-weight: 500; }
+  h1 { font-size: 2.3rem; margin: .6rem 0 .8rem; }
+  h2 { font-size: 1.55rem; margin: 0 0 .9rem; }
+  h3 { font-size: 1.06rem; font-weight: 700; margin: 1.85rem 0 .5rem;
+       font-family: "Avenir Next", system-ui, sans-serif; }
+  p { margin: 0 0 1rem; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.25rem; }
+  li { margin-bottom: .4rem; }
+  strong { color: var(--ink); font-weight: 700; }
+
+  .eyebrow { font-size: .69rem; letter-spacing: .15em; text-transform: uppercase;
+             font-weight: 800; color: var(--file-blue); margin: 0; }
+  .lede { font-size: 1.09rem; color: var(--ink-2); max-width: 42rem; }
+  .stamp { display: inline-block; font-family: "SF Mono", ui-monospace, Menlo, monospace;
+           font-size: .72rem; color: var(--ink-3); border: 1px solid var(--rule);
+           border-radius: 3px; padding: .18rem .5rem; background: var(--card); }
+  header.doc { border-bottom: 2px solid var(--ink); padding-bottom: 1.6rem; margin-bottom: 2.4rem; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; }
+
+  section { margin-bottom: 3.1rem; }
+  .sec-head { display: flex; gap: .9rem; align-items: baseline; margin-bottom: .2rem; }
+  .sec-num { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .82rem;
+             color: var(--file-blue); font-weight: 700; padding-top: .3rem; }
+
+  .bbox { position: relative; background: var(--card); padding: 1.25rem 1.4rem;
+          margin: 1.5rem 0; border-radius: 2px; }
+  .bbox::before, .bbox::after { content: ""; position: absolute; width: 14px; height: 14px; }
+  .bbox::before { top: 0; left: 0; border-top: 2px solid var(--file-blue); border-left: 2px solid var(--file-blue); }
+  .bbox::after { bottom: 0; right: 0; border-bottom: 2px solid var(--file-blue); border-right: 2px solid var(--file-blue); }
+  .bbox .tag { display: block; font-size: .66rem; letter-spacing: .13em; text-transform: uppercase;
+               font-weight: 800; color: var(--file-blue); margin-bottom: .45rem; }
+  .bbox.warn::before, .bbox.warn::after { border-color: var(--warn); }
+  .bbox.warn .tag { color: var(--warn); }
+  .bbox p:last-child { margin-bottom: 0; }
+  .bbox .big { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 1.55rem;
+               font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
+               display: block; margin: .1rem 0 .3rem; }
+
+  .why { border-left: 3px solid var(--file-blue); background: var(--blue-wash);
+         padding: .8rem 1.1rem; margin: 1.1rem 0; border-radius: 0 3px 3px 0; font-size: .96rem; }
+  .why .tag { display:block; font-size:.64rem; letter-spacing:.13em; text-transform:uppercase;
+              font-weight:800; color: var(--file-blue); margin-bottom:.28rem; }
+  .why p:last-child { margin-bottom: 0; }
+
+  .tablewrap { overflow-x: auto; margin: 1.25rem 0; border: 1px solid var(--rule);
+               border-radius: 3px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: .87rem; min-width: 32rem; }
+  th { text-align: left; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase;
+       color: var(--ink-3); font-weight: 800; padding: .6rem .85rem;
+       border-bottom: 1.5px solid var(--rule); white-space: nowrap; }
+  td { padding: .52rem .85rem; border-bottom: 1px solid var(--rule); color: var(--ink-2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  .num { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums;
+         text-align: right; white-space: nowrap; font-size: .82rem; }
+  .up { color: var(--gain); font-weight: 700; }
+  .dn { color: var(--loss); font-weight: 700; }
+  tr.total td { border-top: 1.5px solid var(--ink); font-weight: 700; color: var(--ink); background: var(--blue-wash); }
+  .after-table { font-size: .92rem; color: var(--ink-2); margin-top: -.45rem; }
+
+  code, .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .84em;
+                background: var(--mono-bg); padding: .08em .32em; border-radius: 3px; }
+
+  .pill { display:inline-block; font-size:.65rem; font-weight:800; letter-spacing:.07em;
+          text-transform:uppercase; padding:.12rem .5rem; border-radius:999px; white-space:nowrap; }
+  .pill.ok { color: var(--gain); background: var(--gain-wash); }
+  .pill.no { color: var(--loss); background: var(--loss-wash); }
+  .pill.mid { color: var(--warn); background: var(--warn-wash); }
+
+  .plan { list-style: none; padding: 0; margin: 1.3rem 0; }
+  .plan > li { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1.1rem;
+               padding: 1rem 0; border-top: 1px solid var(--rule); }
+  .plan > li:last-child { border-bottom: 1px solid var(--rule); }
+  .day { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: .78rem;
+         font-weight: 700; color: var(--file-blue); padding-top: .12rem; }
+  .plan h4 { margin: 0 0 .3rem; font-size: .98rem; font-weight: 700; color: var(--ink);
+             font-family: "Avenir Next", system-ui, sans-serif; }
+  .plan p { margin: 0 0 .4rem; font-size: .93rem; color: var(--ink-2); }
+  .plan .cost { font-size: .76rem; color: var(--ink-3); font-family: "SF Mono", ui-monospace, monospace; }
+  @media (max-width: 560px) { .plan > li { grid-template-columns: 1fr; gap: .35rem; } }
+
+  .fn { font-size: .84rem; color: var(--ink-3); }
+  hr.rule { border: none; border-top: 1px solid var(--rule); margin: 2.2rem 0; }
+  :focus-visible { outline: 2px solid var(--file-blue); outline-offset: 2px; }
+</style>
+
+<div class="sheet">
+
+<header class="doc">
+  <p class="eyebrow">Working paper · internal</p>
+  <h1>ParseBench: path to a published state-of-the-art result</h1>
+  <p class="lede">A live document-parsing benchmark whose table corpus is majority insurance rate filings. We can take the top open-weight position on it without training anything. The open question is not whether we can — it is which version of the claim survives a technical reader.</p>
+  <div class="meta-row">
+    <span class="stamp">Wed 12 Aug 2026</span>
+    <span class="stamp">target: Fri 14 Aug</span>
+    <span class="stamp">GPU spend to date: ~$4</span>
+    <span class="stamp">no training run yet</span>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head"><span class="sec-num">00</span><h2>Where we stand</h2></div>
+
+  <div class="bbox">
+    <span class="tag">Measured, full 476-document scoring corpus</span>
+    <span class="big">76.79 &nbsp;vs&nbsp; 76.36</span>
+    <p>Our patched pipeline against the published score of the open-weight leader, <code>KDL-Frontier-Parser-nano</code> (KoreaDeepLearning; 1.2B parameters, AGPL-3.0). Margin <strong class="up">+0.43</strong> against an estimated ±0.2 transfer uncertainty. Achieved by changing markdown emission only — <strong>no fine-tuning, no GPU training.</strong></p>
+  </div>
+
+  <p>Five things are simultaneously true, and the tension between them is the decision:</p>
+  <ul>
+    <li><strong>The measurement rig is validated.</strong> Three of five dimensions reproduce the leader's published scores within 0.3, and a control model reproduces its published chart score exactly.</li>
+    <li><strong>The gap was real and is now closed.</strong> Our unpatched reproduction scored 72.65; the patch set recovers 4.14 points.</li>
+    <li><strong>Part of that recovery is genuine parsing improvement; part is exploiting a coupling in the scorer.</strong> A 20-line markdown transformation alone reaches 77.01.</li>
+    <li><strong>Four defects found</strong> — one in the leader's pipeline, two in the benchmark's scoring, one in a different benchmark. Contributions independent of any score.</li>
+    <li><strong>The corpus is on-thesis:</strong> 57.7% of the Tables dimension is insurance rate filings, and the leader performs <em>worse</em> on those than on the remainder.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>The target, and why this one</h2></div>
+
+  <p><strong>ParseBench</strong> (LlamaIndex) scores document parsing over ~2,079 human-verified pages of enterprise documents using 169,011 deterministic rule checks across five dimensions. Output is markdown; grading is rule-based, so runs are reproducible and cheap.</p>
+
+  <p>It was selected after rejecting five alternatives for verified reasons, not preference: <em>INS-ActBench</em> (actuarial) publishes evaluation code but no dataset — 3 commits, 0 releases, and a HuggingFace request to host the data unanswered for two weeks; <em>InsureBench</em> never launched and its leaderboard chart is placeholder art; <em>SnorkelUnderwrite</em> is archived with all 33 entries self-run; <em>ActuBench</em> is saturated at 0.98 with no submission endpoint; and the Berkeley Function-Calling Leaderboard is frozen at December 2025, so its #1 is a nine-month-old model.</p>
+
+  <p>ParseBench clears three bars none of those cleared together:</p>
+  <ul>
+    <li><strong>Live and current</strong> — 85 entries, 39 open-weight.</li>
+    <li><strong>Self-serve submission</strong> — a pull request adding <code>.eval_results/parsebench.yaml</code> to <em>your own</em> model repo. No form, no email, no gatekeeper.</li>
+    <li><strong>No LLM-as-judge</strong> on the dimensions we target, so a full run costs GPU time only and the score cannot drift between attempts.</li>
+  </ul>
+
+  <h3>The five dimensions and their metrics</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Dimension</th><th>Metric</th><th>What it measures</th><th class="num">Pages</th></tr>
+    <tr><td>Tables</td><td><code>grits_trm_composite</code></td><td>GriTS (grid table similarity — structural match of rows/columns) averaged with TableRecordMatch, which treats a table as a bag of records.</td><td class="num">503</td></tr>
+    <tr><td>Charts</td><td><code>rule_pass_rate</code></td><td>Annotated data points must be recovered with correct labels — extraction, not description.</td><td class="num">568</td></tr>
+    <tr><td>Content Faithfulness</td><td><code>content_faithfulness</code></td><td>Omissions, hallucinations and reading-order violations at word, sentence and digit granularity. 141,322 rules.</td><td class="num">506</td></tr>
+    <tr><td>Semantic Formatting</td><td><code>semantic_formatting</code></td><td>Preservation of meaning-bearing inline styling: bold, strikethrough, super/subscript, headings, LaTeX, code fences.</td><td class="num">476</td></tr>
+    <tr><td>Visual Grounding</td><td><code>layout_element_rule_pass_rate</code></td><td>Localization (intersection-over-area), element classification, and attribution — tracing each extracted element to its region on the page.</td><td class="num">500</td></tr>
+  </table></div>
+  <p class="after-table">Overall is the <strong>unweighted mean of the five</strong>, verified arithmetically: the leader's published dimension scores average to exactly 76.362.</p>
+
+  <div class="why">
+    <span class="tag">Why formatting and grounding are the load-bearing dimensions for us</span>
+    <p>Both encode requirements a real document pipeline has. Struck-through text marks superseded terms; superscripts are footnote references that change how a figure reads — a parser that silently drops them returns text that is complete and misleading. Grounding is auditability: an extracted figure you cannot trace to a page region is unusable where decisions must be defensible.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>Why it is effectively an insurance benchmark</h2></div>
+
+  <p>Three independent passes over the corpus — filenames, all 169,011 ground-truth rule strings, and the text layer of 2,037 PDFs — with every candidate inspected individually and 11 judgement calls documented. <strong>384 of 2,079 documents (18.5%) are insurance.</strong> The concentration is the point:</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Dimension</th><th class="num">Insurance files</th><th class="num">Total</th><th class="num">Insurance share of rules</th></tr>
+    <tr><td>Tables</td><td class="num">290</td><td class="num">503</td><td class="num up">57.7%</td></tr>
+    <tr><td>Charts</td><td class="num">40</td><td class="num">568</td><td class="num">7.5%</td></tr>
+    <tr><td>Semantic Formatting</td><td class="num">24</td><td class="num">476</td><td class="num">5.8%</td></tr>
+    <tr><td>Content Faithfulness</td><td class="num">25</td><td class="num">506</td><td class="num">4.7%</td></tr>
+    <tr><td>Visual Grounding</td><td class="num">29</td><td class="num">500</td><td class="num">4.5%</td></tr>
+  </table></div>
+
+  <p class="after-table">The Tables dimension is <strong>majority insurance</strong>: 193 SERFF rate-filing pages (System for Electronic Rate and Form Filing — the channel US carriers use to file rates with state regulators), 78 more from auto and farm property-casualty filings, plus Solvency II reports and life-insurer financial statements.</p>
+
+  <p>And the leader scores <strong class="dn">3.73 points worse</strong> on insurance tables (84.18) than on the remainder (87.91) — these documents are denser and more deeply nested than the average enterprise page. So insurance table extraction is simultaneously the largest lever on that dimension and the work closest to the product.</p>
+
+  <p class="fn">Reference points on the same board: Anthropic Fable 5 at 70.10 and <span class="mono">$15.60</span>/page; LlamaParse Agentic (the benchmark authors' own commercial product) leads overall at 84.88 and <span class="mono">$1.25</span>/page. A self-hostable open-weight winner carries a cost argument alongside accuracy.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>Parity: is the rig honest?</h2></div>
+
+  <p>Before measuring anything we care about, reproduce a number that is already published. We ran the leader's own vendored pipeline over the complete corpus, scoring with the benchmark's own default metric per dimension rather than hand-picked columns.</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Dimension</th><th class="num">Files</th><th class="num">Ours</th><th class="num">Published</th><th class="num">Δ</th><th>Status</th></tr>
+    <tr><td>Content Faithfulness</td><td class="num">506</td><td class="num">87.18</td><td class="num">87.19</td><td class="num">−0.01</td><td><span class="pill ok">reproduced</span></td></tr>
+    <tr><td>Tables</td><td class="num">503</td><td class="num">85.76</td><td class="num">85.56</td><td class="num">+0.20</td><td><span class="pill ok">reproduced</span></td></tr>
+    <tr><td>Charts</td><td class="num">568</td><td class="num">63.69</td><td class="num">63.41</td><td class="num">+0.28</td><td><span class="pill ok">reproduced</span></td></tr>
+    <tr><td>Visual Grounding</td><td class="num">500</td><td class="num">74.19</td><td class="num">78.84</td><td class="num dn">−4.65</td><td><span class="pill mid">unexplained</span></td></tr>
+    <tr><td>Semantic Formatting</td><td class="num">476</td><td class="num">52.42</td><td class="num">66.81</td><td class="num dn">−14.39</td><td><span class="pill no">was the blocker</span></td></tr>
+    <tr class="total"><td>Overall</td><td class="num"></td><td class="num">72.65</td><td class="num">76.36</td><td class="num dn">−3.71</td><td></td></tr>
+  </table></div>
+
+  <p>A 14-point shortfall has two possible causes with opposite remedies: our configuration is wrong, or the leader's published run used an environment we cannot reproduce. Distinguishing them needed a control.</p>
+
+  <div class="bbox">
+    <span class="tag">Control: a second pipeline with known published scores</span>
+    <p>We served <code>Chandra-ocr-2</code> and ran the same corpus. It reproduced its published <strong>Charts score exactly</strong> (65.10 vs 65.10) and its Semantic Formatting to within <strong>3.17</strong> — against the leader's 14.39. A metric-mapping or configuration error on our side would have hit both models similarly. It did not. <strong>Scoring is sound; the deficits are per-model.</strong></p>
+  </div>
+
+  <p>The two models also fail in <em>opposite</em> dimensions — the leader is weak on formatting and fine on grounding; Chandra is 19 points low on grounding and nearly correct on formatting. That asymmetry points at per-model serving configuration rather than a harness fault. Two candidate causes were tested and eliminated: an optional LLM normaliser (scoped to chart metrics only, and our charts matched) and output truncation (zero <code>finish_reason: "length"</code> across 1,200 saved outputs).</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>Root cause of the formatting deficit</h2></div>
+
+  <p>Across <strong>23,802 elements from 1,196 documents</strong>, the leader emits <strong>zero</strong> inline markup — no <code>&lt;b&gt;</code>, <code>~~</code>, <code>&lt;sup&gt;</code>, <code>&lt;sub&gt;</code>, <code>&lt;u&gt;</code>. Element content is captured after the model call and before markdown assembly, so this measures the model's output, not the renderer.</p>
+
+  <p>The cause is the prompts. The complete instruction set is five bare strings at <code>kdl_frontier_nano.py:2596-2604</code> — <code>"\nText Recognition:\n"</code>, <code>"\nTable Recognition:\n"</code>, and three siblings. No system prompt, no schema, no formatting request anywhere in 3,323 lines. <strong>The model is never asked for formatting, so it doesn't produce any.</strong> This is a prompt gap, not a post-processing gap and not a capability gap.</p>
+
+  <div class="why">
+    <span class="tag">The coupling that matters</span>
+    <p>The scorer's bold check accepts two kinds of evidence: an explicit bold marker, <em>or</em> the annotated text appearing on a <code>#</code>-heading line — a reasonable proxy, since headings render bold.</p>
+    <p>Since this pipeline emits no bold markers, <strong>100% of its bold credit arrives through the heading route.</strong> Its Semantic Formatting score is, in effect, a measurement of how many lines it labels as headings. That coupling is what makes the dimension both fixable and gameable, and it is the crux of §06.</p>
+  </div>
+
+  <p>Failure-mode breakdown of the 1,303 <code>is_bold</code> failures: <strong>63.3% are text merged inline</strong> into a longer line (unreachable by any renderer — only a prompt change reaches them), 18.4% are text missing entirely, and only 13.3% are heading-gate rejections. The gates that matter are a 12-word cap and a terminal-punctuation veto; the leading-capital gate we originally suspected accounts for 3 of 1,303.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>Four defects found</h2></div>
+
+  <div class="bbox">
+    <span class="tag">Defect 1 — the leader's pipeline</span>
+    <p><code>Section-header</code> is <strong>never emitted — 0 occurrences across all 2,078 artifacts</strong> — because <code>NATIVE_LAYOUT_CATEGORY_MAP:545-572</code> has no <code>section_header</code> key. Every heading collapses to <code>h1</code>, making <strong>12.9% of <code>title_hierarchy_percent</code> structurally unreachable</strong> for this pipeline. A missing dictionary key capping part of its own score.</p>
+  </div>
+
+  <div class="bbox">
+    <span class="tag">Defect 2 — the benchmark's chart rule</span>
+    <p><code>ChartDataPointRule:370-394</code> only accepts a chart title label when it is bold or heading text. A parser that renders chart titles as plain text loses those points regardless of extraction accuracy. This is why our bold patches <strong>raise Charts by +2.13</strong> without touching chart extraction — a real defect we were losing points to.</p>
+  </div>
+
+  <div class="bbox warn">
+    <span class="tag">Defect 3 — undocumented zero-weight categories</span>
+    <p><code>is_underline</code>, <code>is_italic</code> and <code>is_mark</code> are annotated in the dataset but belong to <strong>no scored category</strong> — <code>evaluators/parse.py:344-357</code> builds the styling sub-score from only <code>is_bold</code>, <code>is_strikeout</code>, <code>is_sup</code>, <code>is_sub</code>. Confirmed in our own output: a page with two underline rules and one strikeout rule reports <code>included_types: ["is_strikeout"]</code>. Not discoverable from documentation; we nearly spent a day on underline.</p>
+  </div>
+
+  <div class="bbox warn">
+    <span class="tag">Defect 4 — a different benchmark, and the most consequential</span>
+    <p>On the Berkeley Function-Calling Leaderboard, requests that <em>timed out and never reached the model</em> had the error string stored as the model's answer, which the scorer then tried to parse as a function call and marked <strong>wrong</strong>. One model's published run lost <strong>240 of 4,641 items (5.2%)</strong> this way — 50% of one category. Four of the top 30 models exceed 2%. Corrected, that model's multi-turn average moves from 34.75 to 41.68 and one category shifts 15.8 points. Published rankings there partly measure network reliability.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>The patch sets, and the integrity question</h2></div>
+
+  <p>All figures measured by replay over the full 476-document corpus — a harness that reconstructs final markdown byte-identically from stored per-element outputs and scores it with the benchmark's own rule classes, so emission changes can be evaluated without re-running inference. Its baseline reproduces our 52.42 to ten decimal places.</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Patch set</th><th class="num">Sem. Fmt</th><th class="num">Charts</th><th class="num">Content Faith.</th><th class="num">Overall</th><th class="num">vs 76.36</th></tr>
+    <tr><td>Unpatched reproduction</td><td class="num">52.42</td><td class="num">63.69</td><td class="num">87.18</td><td class="num">72.65</td><td class="num dn">−3.71</td></tr>
+    <tr><td>Set A — recommended</td><td class="num">71.27</td><td class="num">65.82</td><td class="num">86.93</td><td class="num up">76.79</td><td class="num up">+0.43</td></tr>
+    <tr><td>Set A less its loosest member</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">≈76.65</td><td class="num up">≈+0.29</td></tr>
+    <tr><td>20-line markdown patch alone</td><td class="num">73.32</td><td class="num">64.59</td><td class="num">87.18</td><td class="num">77.01</td><td class="num up">+0.65</td></tr>
+    <tr><td>Set B, with MAXBOLD</td><td class="num">75.10</td><td class="num">65.82</td><td class="num">86.93</td><td class="num">77.56</td><td class="num">+1.20 <span class="pill no">degenerate</span></td></tr>
+  </table></div>
+
+  <p class="after-table">Collateral was measured, not assumed: <code>**</code>-based patches cost <em>exactly</em> 0.0000 on Content Faithfulness; <code>#</code>-based patches cost 0.25. Tables: 0 of 1,074 changed. Visual Grounding: 0 of 400 element triples changed.</p>
+
+  <h3>Which changes are real improvements</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Change</th><th>Character</th><th>Justification</th></tr>
+    <tr><td>Heading levels from <code>Title</code> bbox height</td><td><span class="pill ok">genuine</span></td><td>Real hierarchy inference where the pipeline had none — every heading was <code>h1</code>.</td></tr>
+    <tr><td><code>Section-header</code> map fix</td><td><span class="pill ok">genuine</span></td><td>Repairs Defect 1; unlocks a structurally unreachable sub-score.</td></tr>
+    <tr><td>Bold run-in <code>Label:</code> prefixes</td><td><span class="pill ok">genuine</span></td><td>Those runs <em>are</em> bold in the source documents; the pipeline dropped them.</td></tr>
+    <tr><td>Relaxed heading gate</td><td><span class="pill mid">mostly genuine</span></td><td>The 12-word cap and terminal-punctuation veto reject real headings; a 30-word replacement is loose.</td></tr>
+    <tr><td>Short single-line <code>Text</code> → <code>#</code></td><td><span class="pill no">exploitation</span></td><td>Promotes body text to a heading on length alone, harvesting bold credit via the §04 coupling.</td></tr>
+    <tr><td><code>List-item</code> → <code>##</code></td><td><span class="pill no">exploitation</span></td><td>List items are not headings.</td></tr>
+    <tr><td>MAXBOLD</td><td><span class="pill no">degenerate</span></td><td>Excluded from all recommended sets.</td></tr>
+  </table></div>
+
+  <div class="bbox warn">
+    <span class="tag">The decision, today</span>
+    <p>Because the pipeline emits no real markup, promoting lines to headings raises the bold score without detecting bold. Any reviewer who reads the diff will see it. Two coherent positions:</p>
+    <p><strong>(a) Rank-first.</strong> Submit Set A, land ~76.79, hold top open-weight on a +0.43 margin against ±0.2 uncertainty. Defensible on the letter — deterministic scoring, disclosed patch — but thin, and exposed to a maintainer re-run in an environment that reproduces the base at 76.36 where we get 72.65.</p>
+    <p><strong>(b) Credibility-first.</strong> Submit the genuine patches only, report the number honestly even if it lands under 76.36, and publish the coupling as a finding: a 20-line markdown transformation exceeds the state of the art without improving parsing, because the bold matcher credits headings and this pipeline emits no markup. With the four defects, that is five contributions to a live benchmark.</p>
+    <p><strong>Recommended: (b), with (a)'s number disclosed in the same document.</strong> A re-run can take a rank away; it cannot take a finding away. And it is the same species of result as Defect 4, which is already the most defensible thing this effort has produced.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>Remaining upside</h2></div>
+
+  <p>Semantic Formatting cannot carry the result alone. At the published 66.81 exactly we would score 75.53 — still 0.83 short — because the <strong>4.65-point Visual Grounding deficit</strong> is untouched. Set A clears 76.36 only because it also gains 2.13 on Charts via Defect 2.</p>
+
+  <p>Grounding is the better remaining target for two reasons. It is worth more than any formatting patch still available. And Defect 1 plausibly contributes to it — a pipeline that never emits <code>Section-header</code> is misclassifying elements, and classification is a scored component of <code>layout_element_rule_pass_rate</code>. One fix may move both dimensions. It is also harder: grounding depends on localization accuracy, not output formatting, so it cannot be reached by markdown changes.</p>
+
+  <p>Field context worth having: open-weight models have already reached parity with the best commercial systems on Content Faithfulness (gap 0.22), Visual Grounding (0.01) and Tables (2.30). The entire open-versus-closed gap on this benchmark is <strong>Charts (25.72)</strong> and <strong>Semantic Formatting (15.94)</strong> — which is why those are the only two dimensions worth touching, and why changes elsewhere risk regression for no upside.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>Plan to Friday</h2></div>
+
+  <ol class="plan">
+    <li>
+      <span class="day">WED am<br>today</span>
+      <div>
+        <h4>Scope decision, then preregister</h4>
+        <p>Choose (a) or (b) — it gates everything downstream. Then commit a public, timestamped preregistration stating the target, base model, patch set, run protocol, run budget and <em>both</em> claim tiers, before any measured run. This is what prevents the result reading as goalpost-moving.</p>
+        <p class="cost">no GPU · ~1 hour · cheapest credibility available</p>
+      </div>
+    </li>
+    <li>
+      <span class="day">WED am</span>
+      <div>
+        <h4>Promote patches from runtime rebinds to real code</h4>
+        <p>Measurements were taken with runtime attribute rebinds annotated with the source lines a real fix would touch. Reimplement as a provider subclass in our own module so a third party can reproduce it, then verify against the replay harness that it still yields 76.79. A mismatch means the patch is not what we measured.</p>
+        <p class="cost">no GPU · harness committed in <code>parsebench/scripts/</code></p>
+      </div>
+    </li>
+    <li>
+      <span class="day">WED pm</span>
+      <div>
+        <h4>End-to-end validation run</h4>
+        <p>Rent one H100, serve the base model, run the full 2,079-file corpus with patches live. The one thing replay cannot substitute for: confirming the patched pipeline actually produces the outputs replay assumed.</p>
+        <p class="cost">~70 min · ~$4 · <strong>kill criterion: miss 76.79 by &gt;0.3 → diagnose, do not submit</strong></p>
+      </div>
+    </li>
+    <li>
+      <span class="day">THU am</span>
+      <div>
+        <h4>Visual Grounding investigation</h4>
+        <p>The 4.65 points. Start with whether the <code>Section-header</code> fix moves element classification. Replay where possible; a second inference run only if a hypothesis demands it.</p>
+        <p class="cost">mostly no GPU · <strong>hard stop at noon</strong> — if nothing found, ship without it</p>
+      </div>
+    </li>
+    <li>
+      <span class="day">THU pm</span>
+      <div>
+        <h4>Write submission and findings paper</h4>
+        <p>Submission: <code>.eval_results/parsebench.yaml</code> plus reproduction code, all five dimensions <em>including losses</em>, deltas against our own baseline rather than the published row, and the insurance-subset scores. Paper: the four defects, the coupling finding, and honest-versus-aggressive numbers side by side.</p>
+        <p class="cost">no GPU · insurance-subset scorer already committed</p>
+      </div>
+    </li>
+    <li>
+      <span class="day">FRI am</span>
+      <div>
+        <h4>Final frozen run</h4>
+        <p>Preregistered protocol, no further changes. Report whatever comes out.</p>
+        <p class="cost">~70 min · ~$4</p>
+      </div>
+    </li>
+    <li>
+      <span class="day">FRI pm</span>
+      <div>
+        <h4>Submit and publish</h4>
+        <p>Pull request adding the results file to our own model repo with reproduction code — maintainers re-run submissions and previously corrected an outsider's entry downward by 20 points, so surviving that review is the point. Separately, file the four defects and publish the findings.</p>
+        <p class="cost">expect 2–3 days of maintainer iteration after Friday</p>
+      </div>
+    </li>
+  </ol>
+
+  <p class="fn">Total incremental GPU budget: <strong>~$8–12</strong>. Every analytical step runs on the committed replay harness at zero cost, which is the only reason three days is feasible.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">09</span><h2>Risks and kill criteria</h2></div>
+
+  <div class="tablewrap"><table>
+    <tr><th>Risk</th><th>Why it matters</th><th>Response</th></tr>
+    <tr><td>Replay does not transfer to live inference</td><td>76.79 is measured on saved outputs; the patched pipeline must actually produce them</td><td>Wednesday's validation run. Miss by &gt;0.3 → stop.</td></tr>
+    <tr><td>Maintainer re-run erases the margin</td><td>+0.43 against ±0.2 is ~2σ, and their environment reproduces the base at 76.36 where ours gets 72.65</td><td>Frame the claim as a measured delta (+4.14) with reproduction code, not an absolute rank.</td></tr>
+    <tr><td>The coupling reads as gaming</td><td>Reviewers reading the diff will see heading-promotion harvesting bold credit</td><td>Position (b): disclose it as a finding rather than let it be discovered.</td></tr>
+    <tr><td>Grounding stays unexplained</td><td>Caps the ceiling; also unexplained for the control model, which is 19 points low</td><td>Time-boxed to Thursday morning; ship without it.</td></tr>
+    <tr><td>Thin insurance sub-samples</td><td>Only Tables (290 vs 213 pages) supports a confident claim; the other four slices are 24–40 pages with no confidence intervals</td><td>Claim insurance results for Tables only; label the rest directional.</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-num">10</span><h2>Reproducibility</h2></div>
+  <p>The replay harness is committed as 10 files in <code>parsebench/scripts/</code> with 9 measurement-record files, so every figure here is re-derivable without re-running inference. Its baseline reproduces our 52.42 to ten decimal places. A fidelity bug in the harness itself — a missing blank-markdown short-circuit that had inflated Content Faithfulness by 0.075 — was found and corrected; all three markdown-derived dimensions now reproduce exactly. No file under the upstream <code>parsebench/src/</code> checkout has been modified.</p>
+  <p class="fn">Supporting reports: <code>reports/formatting_gap_closure.md</code> · <code>reports/kdl_pipeline_map.md</code> · <code>reports/parsebench_scoring_spec.md</code> · <code>reports/insurance_subset.md</code> · <code>reports/insurance_subset_scores.md</code> · <code>reports/track_a_parity.md</code>. Decision history in <code>DECISIONS.md</code>; live state in <code>STATUS.md</code>; plan amendments in <code>TRACKS.md</code>.</p>
+</section>
+
+<hr class="rule">
+<p class="fn"><strong>One line.</strong> We can hold the top open-weight position on a document-parsing benchmark whose table corpus is majority insurance rate filings, without training anything, for ~$12 of remaining compute — and the more durable prize is the four defects and the scorer coupling that getting there uncovered.</p>
+
+</div>

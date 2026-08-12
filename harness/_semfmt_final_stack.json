@@ -1,0 +1,154 @@
+{
+ "baseline_elem": 0.5425567879713584,
+ "baseline_full": 0.52416948576878,
+ "A1 bbox heading levels only": {
+  "semfmt_sub": 0.5561111987614417,
+  "d_semfmt_sub": 1.3554410790083238,
+  "per_type": {
+   "is_bold": 0.4176252674490528,
+   "is_code_block": 0.0,
+   "is_italic": 0.06613123759373084,
+   "is_latex": 0.4431584362139918,
+   "is_mark": 0.0,
+   "is_strikeout": 0.0,
+   "is_sub": 0.2,
+   "is_sup": 0.046875,
+   "is_title": 0.7886169907385442,
+   "is_underline": 0.0,
+   "title_hierarchy_percent": 0.6918856707797809
+  },
+  "cats": {
+   "normalized_code_block": 0.0,
+   "normalized_latex": 0.4431584362139918,
+   "normalized_text_styling": 0.368939890234818,
+   "normalized_title_accuracy": 0.7402513307591625
+  }
+ },
+ "A1+A2": {
+  "semfmt_sub": 0.6244322703185065,
+  "d_semfmt_sub": 8.187548234714804,
+  "per_type": {
+   "is_bold": 0.5481615799467826,
+   "is_code_block": 0.0,
+   "is_italic": 0.06613123759373084,
+   "is_latex": 0.4431584362139918,
+   "is_mark": 0.0,
+   "is_strikeout": 0.0,
+   "is_sub": 0.2,
+   "is_sup": 0.046875,
+   "is_title": 0.8372479730926673,
+   "is_underline": 0.0,
+   "title_hierarchy_percent": 0.734207040386198
+  },
+  "cats": {
+   "normalized_code_block": 0.0,
+   "normalized_latex": 0.4431584362139918,
+   "normalized_text_styling": 0.4732177356194555,
+   "normalized_title_accuracy": 0.7857275067394327
+  }
+ },
+ "A1+A2+A3+A4 (all heading-side)": {
+  "semfmt_sub": 0.6842707740260934,
+  "d_semfmt_sub": 14.171398605473495,
+  "per_type": {
+   "is_bold": 0.6971751408986606,
+   "is_code_block": 0.0,
+   "is_italic": 0.06613123759373084,
+   "is_latex": 0.4431584362139918,
+   "is_mark": 0.0,
+   "is_strikeout": 0.0,
+   "is_sub": 0.2,
+   "is_sup": 0.046875,
+   "is_title": 0.8571148932447585,
+   "is_underline": 0.0,
+   "title_hierarchy_percent": 0.7481527747736091
+  },
+  "cats": {
+   "normalized_code_block": 0.0,
+   "normalized_latex": 0.4431584362139918,
+   "normalized_text_styling": 0.5897340634090164,
+   "normalized_title_accuracy": 0.8026338340091839
+  }
+ },
+ "A5+A6 (bold side only)": {
+  "semfmt_sub": 0.6844167634151493,
+  "d_semfmt_sub": 14.185997544379092,
+  "per_type": {
+   "is_bold": 0.7316943763483464,
+   "is_code_block": 0.0,
+   "is_italic": 0.07530554952033634,
+   "is_latex": 0.4431584362139918,
+   "is_mark": 0.0,
+   "is_strikeout": 0.0,
+   "is_sub": 0.2,
+   "is_sup": 0.046875,
+   "is_title": 0.8551095362256956,
+   "is_underline": 0.0,
+   "title_hierarchy_percent": 0.7063752878677408
+  },
+  "cats": {
+   "normalized_code_block": 0.0,
+   "normalized_latex": 0.4431584362139918,
+   "normalized_text_styling": 0.6165097458335357,
+   "normalized_title_accuracy": 0.7807424120467183
+  }
+ },
+ "SET A = A1..A6": {
+  "semfmt_sub": 0.7310705710429847,
+  "d_semfmt_sub": 18.851378307162626,
+  "per_type": {
+   "is_bold": 0.78888126953061,
+   "is_code_block": 0.0,
+   "is_italic": 0.0798927054836391,
+   "is_latex": 0.4431584362139918,
+   "is_mark": 0.0,
+   "is_strikeout": 0.0,
+   "is_sub": 0.2,
+   "is_sup": 0.046875,
+   "is_title": 0.8883542593943732,
+   "is_underline": 0.0,
+   "title_hierarchy_percent": 0.7796008781067361
+  },
+  "cats": {
+   "normalized_code_block": 0.0,
+   "normalized_latex": 0.4431584362139918,
+   "normalized_text_styling": 0.6592475349433717,
+   "normalized_title_accuracy": 0.8339775687505546
+  },
+  "projected_semfmt_full": 71.26832688404062,
+  "projected_overall": 76.41766537680812
+ },
+ "SET B = SET A + MAXBOLD (ceiling)": {
+  "semfmt_sub": 0.7694113231014807,
+  "d_semfmt_sub": 22.685453513012234,
+  "per_type": {
+   "is_bold": 0.8803209670736382,
+   "is_code_block": 0.0,
+   "is_italic": 0.08316924545742678,
+   "is_latex": 0.4431584362139918,
+   "is_mark": 0.0,
+   "is_strikeout": 0.0,
+   "is_sub": 0.2,
+   "is_sup": 0.046875,
+   "is_title": 0.8948815090775164,
+   "is_underline": 0.0,
+   "title_hierarchy_percent": 0.7871737551663052
+  },
+  "cats": {
+   "normalized_code_block": 0.0,
+   "normalized_latex": 0.4431584362139918,
+   "normalized_text_styling": 0.7255668623038551,
+   "normalized_title_accuracy": 0.8410276321219108
+  },
+  "projected_semfmt_full": 75.10240208989023,
+  "projected_overall": 77.18448041797805
+ },
+ "transfer::A5+A6 (bold_labels + own-line<=40w)": {
+  "d_sub": 14.185997544379092,
+  "d_full": 15.02264923679838
+ },
+ "transfer::MAXBOLD": {
+  "d_sub": 20.74464559377416,
+  "d_full": 20.902615159525105
+ }
+}

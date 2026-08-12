@@ -1,0 +1,26 @@
+# Virtual environments
+.venv/
+*/.venv/
+__pycache__/
+*.pyc
+
+# Upstream checkouts — pinned by commit hash in REPRODUCE.md, not vendored.
+# gorilla/ = ShishirPatil/gorilla (BFCL harness)
+# parsebench/ = run-llama/ParseBench, EXCEPT our own additions, un-ignored below.
+gorilla/
+parsebench/
+
+# Benchmark data and run outputs are large and regenerable (571 MB + 584 MB).
+# Small measurement records are un-ignored below so figures stay re-derivable.
+parsebench/scripts/**/*.parquet
+**/output/**/*.result.json
+**/output/**/*.raw.json
+**/output/**/*.html
+bfcl_runs/
+*.log
+
+# Secrets — never commit
+.env
+.vast_api_key
+*.pem
+id_*

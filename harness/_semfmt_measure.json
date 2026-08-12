@@ -1,0 +1,641 @@
+{
+ "baseline_full": 0.52416948576878,
+ "baseline_elem": 0.5425567879713584,
+ "coverage": 0.6717724288840262,
+ "md_patches": {
+  "E  bold run-in 'Label:' prefixes": {
+   "semfmt": 0.5639514253772154,
+   "d_semfmt": 3.9781939608435457,
+   "d_overall": 0.7956387921687091,
+   "per_type": {
+    "is_bold": 0.5065335369180566,
+    "is_code_block": 0.0,
+    "is_italic": 0.1029568057917204,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.7504159939721308,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.5930317633847372
+   }
+  },
+  "F  bold short standalone lines (<=14w)": {
+   "semfmt": 0.5801110280726821,
+   "d_semfmt": 5.594154230390213,
+   "d_overall": 1.1188308460780427,
+   "per_type": {
+    "is_bold": 0.5129080307106367,
+    "is_code_block": 0.0,
+    "is_italic": 0.11989228966268814,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.7787944893759646,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6212137675202054
+   }
+  },
+  "F2 bold short own-lines, any neighbour (<=14w)": {
+   "semfmt": 0.6132499821600428,
+   "d_semfmt": 8.908049639126281,
+   "d_overall": 1.7816099278252562,
+   "per_type": {
+    "is_bold": 0.5782049858590584,
+    "is_code_block": 0.0,
+    "is_italic": 0.11344067675946233,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.8013092329137138,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6407110662678149
+   }
+  },
+  "G  = E + F": {
+   "semfmt": 0.5985759110578699,
+   "d_semfmt": 7.440642528908992,
+   "d_overall": 1.4881285057817983,
+   "per_type": {
+    "is_bold": 0.5724070300257001,
+    "is_code_block": 0.0,
+    "is_italic": 0.1126342251465591,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.7709689953564407,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6135036315143424
+   }
+  },
+  "G2 = E + F2": {
+   "semfmt": 0.6260449175473274,
+   "d_semfmt": 10.18754317785474,
+   "d_overall": 2.037508635570948,
+   "per_type": {
+    "is_bold": 0.624172273187202,
+    "is_code_block": 0.0,
+    "is_italic": 0.1094084186949462,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.79348373889419,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6330009302619521
+   }
+  },
+  "F2/25w bold own-lines <=25 words": {
+   "semfmt": 0.649658664927637,
+   "d_semfmt": 12.548917915885704,
+   "d_overall": 2.509783583177141,
+   "per_type": {
+    "is_bold": 0.6582934357700266,
+    "is_code_block": 0.0,
+    "is_italic": 0.11021487030784943,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.8188142171987683,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6587757038336308
+   }
+  },
+  "F2/40w bold own-lines <=40 words": {
+   "semfmt": 0.6787785510004557,
+   "d_semfmt": 15.460906523167573,
+   "d_overall": 3.0921813046335145,
+   "per_type": {
+    "is_bold": 0.7250724919298706,
+    "is_code_block": 0.0,
+    "is_italic": 0.11021487030784943,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.8315908452629294,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6722317631361159
+   }
+  },
+  "MAXBOLD bold every non-table line (ceiling)": {
+   "semfmt": 0.733195637364031,
+   "d_semfmt": 20.902615159525105,
+   "d_overall": 4.180523031905021,
+   "per_type": {
+    "is_bold": 0.8556497169539118,
+    "is_code_block": 0.0,
+    "is_italic": 0.1094084186949462,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.8384316412828299,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.679507882539101
+   }
+  },
+  "HEADSHORT '# ' every short own-line (<=14w)": {
+   "semfmt": 0.6099104336093313,
+   "d_semfmt": 8.57409478405513,
+   "d_overall": 1.7148189568110261,
+   "per_type": {
+    "is_bold": 0.5681362803312349,
+    "is_code_block": 0.0,
+    "is_italic": 0.09677843767027827,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.7895711711793084,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6563787648079414
+   }
+  },
+  "HEADALL  '# ' every non-table line (ceiling)": {
+   "semfmt": 0.7269437934091132,
+   "d_semfmt": 20.277430764033323,
+   "d_overall": 4.055486152806664,
+   "per_type": {
+    "is_bold": 0.8376627436072088,
+    "is_code_block": 0.0,
+    "is_italic": 0.09677843767027827,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.8293732414089263,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6886471214560439
+   }
+  }
+ },
+ "provider_patches": {
+  "T1 _is_titleish: drop leading-capital/caps gate": {
+   "semfmt": 0.5468702382812186,
+   "d_semfmt_sub": 0.43134503098601895,
+   "d_overall_sub": 0.08626900619720379,
+   "d_overall_rescaled": 0.057953139830506706,
+   "per_type": {
+    "is_bold": 0.42279955938805064,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.7946660747343962,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6477054376846195
+   }
+  },
+  "T2 _TITLE_VARIANTS -> 'ultra' (22w, caps .25)": {
+   "semfmt": 0.5483793142794974,
+   "d_semfmt_sub": 0.5822526308138953,
+   "d_overall_sub": 0.11645052616277907,
+   "d_overall_rescaled": 0.07822825280519294,
+   "per_type": {
+    "is_bold": 0.430766879934951,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.7921024153266303,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6449164578994421
+   }
+  },
+  "T3 _TITLE_VARIANTS -> 'ultra2' (30w, caps 0)": {
+   "semfmt": 0.5500318340517243,
+   "d_semfmt_sub": 0.7475046080365866,
+   "d_overall_sub": 0.14950092160731732,
+   "d_overall_rescaled": 0.10043059722854794,
+   "per_type": {
+    "is_bold": 0.4339755240771186,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.7935282708399383,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6461046708271988
+   }
+  },
+  "T4 titleish: drop caps + terminal-punct": {
+   "semfmt": 0.5590779585626697,
+   "d_semfmt_sub": 1.6521170591311307,
+   "d_overall_sub": 0.33042341182622614,
+   "d_overall_rescaled": 0.22196933792265078,
+   "per_type": {
+    "is_bold": 0.44249967782927085,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.8060814315649091,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6571538698087159
+   }
+  },
+  "T5 titleish: drop caps+punct+label, 30 words": {
+   "semfmt": 0.610555886893747,
+   "d_semfmt_sub": 6.799909892238853,
+   "d_overall_sub": 1.3599819784477707,
+   "d_overall_rescaled": 0.9135983969003622,
+   "per_type": {
+    "is_bold": 0.5481615799467826,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.8372479730926673,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6824628461149082
+   }
+  },
+  "B  multi-line Title -> one '#' per line": {
+   "semfmt": 0.5399717467779029,
+   "d_semfmt_sub": -0.2585041193455484,
+   "d_overall_sub": -0.05170082386910968,
+   "d_overall_rescaled": -0.03473118802585705,
+   "per_type": {
+    "is_bold": 0.41528409388647397,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.7717996720200847,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6524934582662212
+   }
+  },
+  "C1 Caption/Footnote/Page-hdr/ftr -> '## '": {
+   "semfmt": 0.5536511848309992,
+   "d_semfmt_sub": 1.1094396859640754,
+   "d_overall_sub": 0.22188793719281508,
+   "d_overall_rescaled": 0.14905819850808363,
+   "per_type": {
+    "is_bold": 0.438589723190197,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.8022994426339238,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6545115920843301
+   }
+  },
+  "C2 short single-line Text -> '# '": {
+   "semfmt": 0.5831308817458715,
+   "d_semfmt_sub": 4.057409377451304,
+   "d_overall_sub": 0.8114818754902607,
+   "d_overall_rescaled": 0.5451311504934574,
+   "per_type": {
+    "is_bold": 0.4897494975498149,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.8193091734048181,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.666684571677762
+   }
+  },
+  "C3 List-item -> '## ' instead of '- '": {
+   "semfmt": 0.5956972826547229,
+   "d_semfmt_sub": 5.314049468336446,
+   "d_overall_sub": 1.0628098936672892,
+   "d_overall_rescaled": 0.7139663837108484,
+   "per_type": {
+    "is_bold": 0.5551103737250087,
+    "is_code_block": 0.0,
+    "is_italic": 0.06613123759373084,
+    "is_latex": 0.4431584362139918,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.2,
+    "is_sup": 0.046875,
+    "is_title": 0.7971721238183921,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6471787147244366
+   }
+  }
+ },
+ "stacks": {
+  "T5 + G  (relaxed titles + E + F)": {
+   "semfmt": 0.6448354771160709,
+   "d_semfmt": 10.22786891447125,
+   "d_overall": 2.04557378289425,
+   "corpus": "elem 319",
+   "per_type": {
+    "is_title": 0.8394342848797395,
+    "title_hierarchy_percent": 0.685038901552092,
+    "is_bold": 0.6382478419761275,
+    "is_italic": 0.07530554952033634,
+    "is_sup": 0.046875,
+    "is_latex": 0.4431584362139918,
+    "is_strikeout": 0.0,
+    "is_underline": 0.0,
+    "is_mark": 0.0,
+    "is_code_block": 0.0,
+    "is_sub": 0.2
+   }
+  },
+  "T5 + G2 (relaxed titles + E + F2)": {
+   "semfmt": 0.6663831854246621,
+   "d_semfmt": 12.382639745330371,
+   "d_overall": 2.476527949066074,
+   "corpus": "elem 319",
+   "per_type": {
+    "is_title": 0.8590404806509367,
+    "title_hierarchy_percent": 0.7034053463662981,
+    "is_bold": 0.6762746626658244,
+    "is_italic": 0.07530554952033634,
+    "is_sup": 0.046875,
+    "is_latex": 0.4431584362139918,
+    "is_strikeout": 0.0,
+    "is_underline": 0.0,
+    "is_mark": 0.0,
+    "is_code_block": 0.0,
+    "is_sub": 0.2
+   }
+  },
+  "T5 + C2 + G2 (titles + short-Text head + bold)": {
+   "semfmt": 0.6708455021444283,
+   "d_semfmt": 12.828871417306987,
+   "d_overall": 2.5657742834613972,
+   "corpus": "elem 319",
+   "per_type": {
+    "is_title": 0.8681659559361078,
+    "title_hierarchy_percent": 0.7093485201136839,
+    "is_bold": 0.6834175198086816,
+    "is_italic": 0.07530554952033634,
+    "is_sup": 0.046875,
+    "is_latex": 0.4431584362139918,
+    "is_strikeout": 0.0,
+    "is_underline": 0.0,
+    "is_mark": 0.0,
+    "is_code_block": 0.0,
+    "is_sub": 0.2
+   }
+  },
+  "MAXBOLD alone (element sub-corpus reference)": {
+   "semfmt": 0.7500032439091,
+   "d_semfmt": 20.74464559377416,
+   "d_overall": 4.148929118754832,
+   "corpus": "elem 319",
+   "per_type": {
+    "is_title": 0.8751365307774049,
+    "title_hierarchy_percent": 0.728378468130877,
+    "is_bold": 0.8752332735600187,
+    "is_italic": 0.07530554952033634,
+    "is_sup": 0.046875,
+    "is_latex": 0.4431584362139918,
+    "is_strikeout": 0.0,
+    "is_underline": 0.0,
+    "is_mark": 0.0,
+    "is_code_block": 0.0,
+    "is_sub": 0.2
+   }
+  },
+  "T5 + MAXBOLD": {
+   "semfmt": 0.7511921239199058,
+   "d_semfmt": 20.863533594854733,
+   "d_overall": 4.172706718970947,
+   "corpus": "elem 319",
+   "per_type": {
+    "is_title": 0.8810031820813187,
+    "title_hierarchy_percent": 0.7278621633136093,
+    "is_bold": 0.8754047413240791,
+    "is_italic": 0.08316924545742678,
+    "is_sup": 0.046875,
+    "is_latex": 0.4431584362139918,
+    "is_strikeout": 0.0,
+    "is_underline": 0.0,
+    "is_mark": 0.0,
+    "is_code_block": 0.0,
+    "is_sub": 0.2
+   }
+  },
+  "T5 + C2 + C3 + MAXBOLD": {
+   "semfmt": 0.7585802122063015,
+   "d_semfmt": 21.602342423494303,
+   "d_overall": 4.320468484698861,
+   "corpus": "elem 319",
+   "per_type": {
+    "is_title": 0.8948815090775164,
+    "title_hierarchy_percent": 0.7355254167278429,
+    "is_bold": 0.8871772280965659,
+    "is_italic": 0.08316924545742678,
+    "is_sup": 0.046875,
+    "is_latex": 0.4431584362139918,
+    "is_strikeout": 0.0,
+    "is_underline": 0.0,
+    "is_mark": 0.0,
+    "is_code_block": 0.0,
+    "is_sub": 0.2
+   }
+  },
+  "G2 + MAXBOLD-ordering check": {
+   "semfmt": 0.7177460512168322,
+   "d_semfmt": 19.357656544805224,
+   "d_overall": 3.871531308961045,
+   "corpus": "full 476",
+   "per_type": {
+    "is_bold": 0.8290604295848079,
+    "is_code_block": 0.0,
+    "is_italic": 0.1094084186949462,
+    "is_latex": 0.46066062021072796,
+    "is_mark": 0.0,
+    "is_strikeout": 0.0,
+    "is_sub": 0.16666666666666666,
+    "is_sup": 0.046511627906976744,
+    "is_title": 0.8264493380691833,
+    "is_underline": 0.0,
+    "title_hierarchy_percent": 0.6664270536134486
+   }
+  }
+ },
+ "collateral": {
+  "E  bold run-in 'Label:' prefixes": {
+   "cf": {
+    "baseline": 0.8725038971224405,
+    "patched": 0.8725038971224405,
+    "delta_pts": 0.0,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6368617005060667,
+    "patched": 0.6372138131821231,
+    "delta_pts": 0.03521126760563931,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "F  bold short standalone lines": {
+   "cf": {
+    "baseline": 0.8725038971224405,
+    "patched": 0.8725038971224405,
+    "delta_pts": 0.0,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6368617005060667,
+    "patched": 0.6410870526187428,
+    "delta_pts": 0.42253521126760507,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "F2 bold short own-lines": {
+   "cf": {
+    "baseline": 0.8725038971224405,
+    "patched": 0.8725039581186094,
+    "delta_pts": 6.099616889354564e-06,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6368617005060667,
+    "patched": 0.6458601355608398,
+    "delta_pts": 0.8998435054773046,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "G2 = E + F2": {
+   "cf": {
+    "baseline": 0.8725038971224405,
+    "patched": 0.8725039581186094,
+    "delta_pts": 6.099616889354564e-06,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6368617005060667,
+    "patched": 0.6458601355608398,
+    "delta_pts": 0.8998435054773046,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "MAXBOLD bold every non-table line": {
+   "cf": {
+    "baseline": 0.8725038971224405,
+    "patched": 0.8725039581186094,
+    "delta_pts": 6.099616889354564e-06,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6368617005060667,
+    "patched": 0.6458601355608398,
+    "delta_pts": 0.8998435054773046,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "HEADALL '# ' every non-table line": {
+   "cf": {
+    "baseline": 0.8725038971224405,
+    "patched": 0.8604270606879886,
+    "delta_pts": -1.2076836434451899,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6368617005060667,
+    "patched": 0.6599781771436701,
+    "delta_pts": 2.311647663760341,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "T5 relaxed _is_titleish": {
+   "cf": {
+    "baseline": 0.8744968532665821,
+    "patched": 0.8732400429886694,
+    "delta_pts": -0.125681027791269,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6379934912505335,
+    "patched": 0.654356949779485,
+    "delta_pts": 1.6363458528951491,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  },
+  "C2 short single-line Text -> '# '": {
+   "cf": {
+    "baseline": 0.8744968532665821,
+    "patched": 0.8731611406074138,
+    "delta_pts": -0.133571265916832,
+    "n": 506
+   },
+   "charts": {
+    "baseline": 0.6379934912505335,
+    "patched": 0.6392258856167307,
+    "delta_pts": 0.12323943661971537,
+    "n": 568
+   },
+   "tables_changed_docs": 0,
+   "tables_checked_docs": 1074
+  }
+ },
+ "collateral_baseline_check": {
+  "cf": {
+   "baseline": 0.8725038971224405,
+   "patched": 0.8725038971224405,
+   "delta_pts": 0.0,
+   "n": 506
+  },
+  "charts": {
+   "baseline": 0.6368617005060667,
+   "patched": 0.6368617005060667,
+   "delta_pts": 0.0,
+   "n": 568
+  },
+  "tables_changed_docs": 0,
+  "tables_checked_docs": 1074
+ }
+}

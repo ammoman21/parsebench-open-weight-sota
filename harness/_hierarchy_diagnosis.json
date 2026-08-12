@@ -1,0 +1,11 @@
+{
+ "decomposition": {
+  "title_present": 1246,
+  "title_missing": 623,
+  "edge_fail_level_only": 438,
+  "edge_missing_endpoint": 766,
+  "edge_ok": 290,
+  "edge_fail_order_only": 9,
+  "edge_fail_order_and_level": 26
+ }
+}

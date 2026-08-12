@@ -1,0 +1,51 @@
+{
+ "baseline": 0.52416948576878,
+ "target": 0.6681,
+ "oracles": {
+  "is_bold -> 1.0": 0.7411693146118039,
+  "is_strikeout -> 1.0": 0.5378241357410498,
+  "is_sup -> 1.0": 0.5959430410354711,
+  "is_sub -> 1.0": 0.5255089037056765,
+  "ALL FOUR styling sub-types -> 1.0": 0.8236005965825764,
+  "is_title -> 1.0": 0.5853219927823067,
+  "title_hierarchy_percent -> 1.0": 0.6262132265583691,
+  "both title types -> 1.0": 0.6873657335718958,
+  "is_latex -> 1.0": 0.5319542814789511,
+  "is_code_block -> 1.0": 0.5295878456729167,
+  "is_underline -> 1.0 (expect exactly 0)": 0.52416948576878,
+  "is_italic -> 1.0 (expect exactly 0)": 0.52416948576878,
+  "EVERYTHING -> 1.0": 1.0
+ },
+ "rule_counts": {
+  "is_title": 1872,
+  "title_hierarchy_percent": 402,
+  "is_bold": 2066,
+  "is_italic": 655,
+  "is_underline": 405,
+  "is_strikeout": 44,
+  "is_latex": 123,
+  "is_sup": 318,
+  "is_code_block": 10,
+  "is_mark": 88,
+  "is_sub": 14
+ },
+ "rule_docs": {
+  "is_title": 402,
+  "title_hierarchy_percent": 402,
+  "is_bold": 327,
+  "is_italic": 155,
+  "is_underline": 116,
+  "is_strikeout": 13,
+  "is_latex": 32,
+  "is_sup": 86,
+  "is_code_block": 5,
+  "is_mark": 13,
+  "is_sub": 6
+ },
+ "baseline_cats": {
+  "normalized_text_styling": 0.3607740156849998,
+  "normalized_title_accuracy": 0.6717238786784341,
+  "normalized_latex": 0.46066062021072796,
+  "normalized_code_block": 0.0
+ }
+}
