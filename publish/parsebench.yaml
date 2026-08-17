@@ -1,6 +1,6 @@
 # .eval_results/parsebench.yaml — for the HF model repo per ParseBench submission docs
 benchmark: parsebench
-model: Florin/florin-parser-nano
+model: florin-inc/florin-parser-nano
 results:
   overall: 76.95
   tables: 86.14
