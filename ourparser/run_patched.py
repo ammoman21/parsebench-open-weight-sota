@@ -20,6 +20,20 @@ interface. Use it exactly as you would use `parse-bench`:
     python ourparser/run_patched.py run kdl_frontier_nano_patched \\
         --input_dir parsebench/data --output_dir parsebench/output/kdl_frontier_nano_patched
 
+LABEL CAPTURE (set this for the diagnostic run)
+-----------------------------------------------
+Set PARSEBENCH_LABEL_CAPTURE=<dir> and the run records, for every element, the model's
+raw layout label alongside the category it was mapped to, plus whether that raw label was
+present in NATIVE_LAYOUT_CATEGORY_MAP at all. Unmapped labels silently become "Text",
+which is the suspected cause of the Visual Grounding classification deficit. The saved
+run artifacts keep only the mapped category, so this capture is the ONLY way to learn the
+model's actual label vocabulary — and once captured, every candidate map fix becomes
+measurable by replay with no further GPU time.
+
+    PARSEBENCH_LABEL_CAPTURE=runs/labels \\
+    KDL_NANO_ENDPOINT_URL=http://localhost:8000/v1 \\
+    python ourparser/run_patched.py run kdl_frontier_nano_patched ...
+
 Registered pipeline names:
   kdl_frontier_nano_patched     the submitted patch set   (emission_set=genuine_abcd)
   kdl_frontier_nano_aggressive  disclosed, not submitted  (emission_set=aggressive_abcd)
@@ -41,7 +55,17 @@ for _p in (_ROOT, os.environ.get("PARSEBENCH_SRC", os.path.join(_ROOT, "parseben
         sys.path.insert(0, _p)
 
 import ourparser.provider  # noqa: E402,F401  — import registers provider and pipelines
+from ourparser import instrument  # noqa: E402
 from parse_bench.cli import main  # noqa: E402
 
 if __name__ == "__main__":
-    main()
+    if instrument.capture_dir() is None:
+        main()
+    else:
+        # label_capture() restores the wrapped function and flushes the sidecar on exit,
+        # including on exception, so a crashed run still yields whatever it observed.
+        with instrument.label_capture():
+            try:
+                main()
+            finally:
+                print("\n" + instrument.report(), flush=True)
