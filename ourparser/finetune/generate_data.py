@@ -85,6 +85,12 @@ def make_region(rng: random.Random, styled: bool) -> tuple[str, str]:
     n_sent = rng.randint(2, 5)
     pool = list(SENTENCES)
 
+    # Whole-line bold opener (mini-heading inside a text region) — common in real
+    # filings, absent from the it3 mix; bold plateaued at 65 partly for this reason.
+    if styled and rng.random() < 0.25:
+        h = rng.choice(LABELS) + " " + rng.choice(TERMS).title()
+        html_parts.append(f"<b>{h}</b><br>")
+        md_parts.append(f"**{h}**\n")
     # Optional run-in label — the classic bold pattern in policy documents.
     if styled and rng.random() < 0.6:
         lab = rng.choice(LABELS)
@@ -95,18 +101,18 @@ def make_region(rng: random.Random, styled: bool) -> tuple[str, str]:
         s = _sentence(rng, pool)
         if styled:
             r = rng.random()
-            if r < 0.30:  # bold a defined term inside the sentence
+            if r < 0.38:  # bold a defined term inside the sentence
                 t = rng.choice(TERMS)
                 if t in s:
                     s_html = s.replace(t, f"<b>{t}</b>", 1)
                     s_md = s.replace(t, f"**{t}**", 1)
                 else:
                     s_html = s_md = s
-            elif r < 0.50:  # superscript footnote reference at sentence end
+            elif r < 0.58:  # superscript footnote reference at sentence end
                 fm = rng.choice(FOOTMARKS)
                 s_html = s[:-1] + f".<sup>{fm}</sup>" if s.endswith(".") else s + f"<sup>{fm}</sup>"
                 s_md = s[:-1] + f".<sup>{fm}</sup>" if s.endswith(".") else s + f"<sup>{fm}</sup>"
-            elif r < 0.62:  # struck-through (superseded) clause
+            elif r < 0.68:  # struck-through (superseded) clause
                 s_html = f"<s>{s}</s>"
                 s_md = f"~~{s}~~"
             elif r < 0.70 and rng.random() < 0.5:  # subscript via chemical/financial notation
@@ -171,6 +177,42 @@ def render(html_body: str, out_png: Path, rng: random.Random) -> None:
         im.crop(bbox).save(out_png)
 
 
+def render_batch(specs, out_paths, rng_styles) -> None:
+    """One Chrome call for a whole batch: each region is its own CSS page,
+    rasterised per page then tight-cropped. ~10x faster than per-region calls."""
+    import PIL.Image, PIL.ImageChops
+    pages = []
+    for (html_body,), style in zip(specs, rng_styles):
+        font, size, width, align = style
+        pages.append(
+            f'<div style="page-break-after: always; margin:0; padding:20px; '
+            f'width:{width}px; font-family:{font}; font-size:{size}px; '
+            f'line-height:1.45; text-align:{align}; color:#111; background:#fff">'
+            f'{html_body}</div>')
+    doc_html = ('<!doctype html><html><head><meta charset="utf-8"><style>'
+                '@page { margin: 0; size: 760px 2200px; } body { margin:0; }'
+                '</style></head><body>' + "".join(pages) + "</body></html>")
+    with tempfile.TemporaryDirectory() as td:
+        hp = Path(td) / "b.html"; pp = Path(td) / "b.pdf"
+        hp.write_text(doc_html)
+        subprocess.run([CHROME, "--headless", "--disable-gpu", "--no-pdf-header-footer",
+                        f"--print-to-pdf={pp}", str(hp)],
+                       check=True, capture_output=True, timeout=300)
+        doc = fitz.open(pp)
+        assert doc.page_count >= len(out_paths), f"pages {doc.page_count} < regions {len(out_paths)}"
+        for page, out_png in zip(doc, out_paths):
+            pix = page.get_pixmap(dpi=150); pix.save(out_png)
+            im = PIL.Image.open(out_png).convert("RGB")
+            bg = PIL.Image.new("RGB", im.size, (255, 255, 255))
+            bbox = PIL.ImageChops.difference(im, bg).getbbox()
+            if bbox:
+                pad = 8
+                bbox = (max(0, bbox[0]-pad), max(0, bbox[1]-pad),
+                        min(im.width, bbox[2]+pad), min(im.height, bbox[3]+pad))
+                im.crop(bbox).save(out_png)
+        doc.close()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=50)
@@ -187,11 +229,22 @@ def main() -> None:
 
     rows = []
     n_styled = n_neg = 0
+    pending, pending_paths, pending_styles, pending_meta = [], [], [], []
+
+    def flush():
+        if pending:
+            render_batch(pending, pending_paths, pending_styles)
+            pending.clear(); pending_paths.clear(); pending_styles.clear()
+
     for i in range(args.n):
         styled = rng.random() >= args.neg_frac
         html_body, md = make_region(rng, styled)
         png = out / "images" / f"region_{i:05d}.png"
-        render(html_body, png, rng)
+        style = (rng.choice(FONTS), rng.choice([13, 14, 15, 16]),
+                 rng.choice([420, 520, 620, 700]), rng.choice(["left", "justify"]))
+        pending.append((html_body,)); pending_paths.append(png); pending_styles.append(style)
+        if len(pending) >= 100:
+            flush()
         has_markup = any(m in md for m in ("**", "~~", "<sup>", "<sub>"))
         n_styled += has_markup
         n_neg += not has_markup
@@ -202,6 +255,7 @@ def main() -> None:
             "styled": has_markup,
             "seed": args.seed, "index": i,
         })
+    flush()
     (out / "data.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
 
     import collections

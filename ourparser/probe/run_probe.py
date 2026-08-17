@@ -52,7 +52,7 @@ def main() -> None:
                  "Without it the provider errors immediately and a zero-marker result would be\n"
                  "meaningless — it would mean 'nothing ran', not 'the model emitted nothing'.")
 
-    out_dir = ROOT / "parsebench" / "output" / f"probe_{variant}"
+    out_dir = ROOT / "parsebench" / "output" / f"probe_{variant}_{os.environ.get('PROBE_GROUP','text_formatting')}"
     env = dict(os.environ)
     env["PARSEBENCH_PROMPT_VARIANT"] = variant
     env.setdefault("LLAMACLOUD_BENCH_LLM_NORMALIZATION", "off")
