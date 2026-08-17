@@ -1,0 +1,41 @@
+### Iteration 1 — baseline recipe. Every value here is a decision, not a default.
+model_name_or_path: KDLAI/KDL-Frontier-Parser-nano
+trust_remote_code: true
+
+stage: sft
+do_train: true
+finetuning_type: lora
+# Rank 16 on attention+MLP of the language model only. We are nudging a narrow
+# output behaviour on a 1.2B model — big ranks invite forgetting, and the probe
+# proved this model is brittle.
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+# The perception was never the problem (localisation is its strongest metric);
+# the output behaviour is. Touching the vision tower risks the 85.8 Tables score.
+freeze_vision_tower: true
+freeze_multi_modal_projector: true
+
+dataset: kdl_formatting
+template: qwen2_vl
+cutoff_len: 2048
+
+# Completion-only loss (LLaMA-Factory default: train_on_prompt false) — the
+# prompt is byte-identical to production and must never appear in the loss.
+train_on_prompt: false
+
+# 2 epochs, modest LR, cosine. The failure mode to fear is not underfitting —
+# it is the v2 probe outcome (indiscriminate marking) burned into weights.
+num_train_epochs: 2.0
+learning_rate: 1.0e-4
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 4
+bf16: true
+logging_steps: 10
+save_steps: 500
+output_dir: /workspace/ft_out/it1
+overwrite_output_dir: true
+report_to: none

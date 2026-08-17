@@ -69,8 +69,9 @@ FONTS = ['Georgia, serif', 'Helvetica, Arial, sans-serif', '"Times New Roman", s
          'Verdana, sans-serif', '"Courier New", monospace']
 
 
-def _sentence(rng: random.Random) -> str:
-    s = rng.choice(SENTENCES)
+def _sentence(rng: random.Random, pool: list | None = None) -> str:
+    s = rng.choice(pool) if pool else rng.choice(SENTENCES)
+    if pool: pool.remove(s)
     s = (s.replace("{t1}", rng.choice(TERMS)).replace("{t2}", rng.choice(TERMS))
           .replace("{num}", str(rng.randint(2, 97))))
     # article agreement: "a actuarial reserve" -> "an actuarial reserve"
@@ -82,6 +83,7 @@ def make_region(rng: random.Random, styled: bool) -> tuple[str, str]:
     html_parts: list[str] = []
     md_parts: list[str] = []
     n_sent = rng.randint(2, 5)
+    pool = list(SENTENCES)
 
     # Optional run-in label — the classic bold pattern in policy documents.
     if styled and rng.random() < 0.6:
@@ -90,7 +92,7 @@ def make_region(rng: random.Random, styled: bool) -> tuple[str, str]:
         md_parts.append(f"**{lab}:** ")
 
     for i in range(n_sent):
-        s = _sentence(rng)
+        s = _sentence(rng, pool)
         if styled:
             r = rng.random()
             if r < 0.30:  # bold a defined term inside the sentence

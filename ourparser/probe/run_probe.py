@@ -59,8 +59,8 @@ def main() -> None:
 
     cmd = ["uv", "run", "python", str(ROOT / "ourparser" / "probe" / "_inner.py"),
            "run", "kdl_frontier_nano_patched",
-           "--group", "text_formatting",
-           "--input_dir", str(ROOT / "parsebench" / "data_probe"),
+           "--group", os.environ.get("PROBE_GROUP", "text_formatting"),
+           "--input_dir", os.environ.get("PROBE_DATA", str(ROOT / "parsebench" / "data_probe")),
            "--output_dir", str(out_dir),
            "--force", "True",
            "--max_concurrent", "8"]

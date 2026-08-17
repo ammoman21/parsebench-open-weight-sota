@@ -17,11 +17,12 @@ from pathlib import Path
 from collections import defaultdict
 
 SRC = Path("parsebench/data")
-DEST = Path("parsebench/data_probe")
+DEST = Path("parsebench/data_probe") if (len(sys.argv) <= 2 or sys.argv[2] == "text_formatting") else Path(f"parsebench/data_probe_{sys.argv[2]}")
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 40
+DIM = sys.argv[2] if len(sys.argv) > 2 else "text_formatting"
 
 def main() -> None:
-    recs = [json.loads(l) for l in (SRC / "text_formatting.jsonl").open()]
+    recs = [json.loads(l) for l in (SRC / f"{DIM}.jsonl").open()]
     by_pdf: dict[str, list] = defaultdict(list)
     for r in recs:
         by_pdf[r["pdf"]].append(r)
@@ -49,7 +50,7 @@ def main() -> None:
         shutil.copy2(src, dst)
         kept.extend(rs)
 
-    (DEST / "text_formatting.jsonl").write_text(
+    (DEST / f"{DIM}.jsonl").write_text(
         "\n".join(json.dumps(r) for r in kept) + "\n"
     )
     for aux in ("eval.yaml", "README.md"):
