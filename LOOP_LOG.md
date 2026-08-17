@@ -132,3 +132,17 @@ scored docs: 30 failed: 0
    EDGAR real bold) once harvest lands, trains DURING the full run? NO — GPU busy serving.
    it7 trains after the full run completes. Sequencing: full run -> it7 -> it7 probe ->
    (if it7 > it5) second full run on it7, else morning verdict on it5 numbers.
+
+## 03:47 — CALIBRATION FULL RUN (it5 weights) COMPLETE. The night's decisive numbers:
+   Tables 85.52 (-0.30) | Charts 65.54 (+0.37) | CF 87.12 (+0.15) | SemFmt 67.74 (+5.72!!)
+   | Layout 11.82* (EVAL ARTIFACT: adapter-name mismatch zeroed 436/500 docs; Tables scoring
+   normally proves layout generation intact — same-population violation caught before panic;
+   subagent rescoring from saved outputs, no GPU).
+   TRANSFER COEFFICIENT ~1.0: subset 67.59 -> corpus 67.74. Subset iteration is trustworthy.
+   Overall with layout carried at 74.19: **76.02 vs leader 76.36 (-0.34)**. Agonizingly close.
+   Formatting vs board's best open-weight formatting (69.30): -1.56 — claim 2 not yet.
+## INSURANCE SUBSET (it5_full): Tables 83.57 | Charts 71.11 | CF 89.42 | SemFmt 69.33
+   (base 57.39 -> +11.94 on insurance formatting!) | layout artifact. With layout carried
+   (71.97): insurance overall ~= (83.57+71.11+89.42+69.33+71.97)/5 = 77.08 vs leader-repro
+   74.77 -> **+2.31 on insurance documents.** Claim 3 material, pending layout rescore.
+## it7 launched (6,678 rows: 2,165 real EDGAR bold + synthetic strike/sup + negatives), ~50 min.
