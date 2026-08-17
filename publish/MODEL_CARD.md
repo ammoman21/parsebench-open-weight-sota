@@ -24,7 +24,7 @@ License is AGPL-3.0, inherited from the base.
 | Visual Grounding | 74.15 | 78.84 | 74.19 |
 | **Overall** | **76.95** | **76.36** | **72.65** |
 
-Confirmation-run variance: PENDING_CONFIRMATION_RUN.
+Confirmation-run variance: two independent full runs: 76.95 and 76.89 (|Δ| = 0.06 overall; max per-dimension |Δ| = 0.12). Reported figure: mean 76.92..
 Insurance-document subset (384 docs incl. SERFF rate filings, methodology in repo): **77.60**
 vs 74.77 for the base pipeline measured identically.
 

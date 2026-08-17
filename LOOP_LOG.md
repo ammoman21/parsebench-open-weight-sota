@@ -212,3 +212,15 @@ scored docs: 30 failed: 0
    unexplained bonus (possibly EDGAR bold in table headers; flagged, not load-bearing);
    charts/layout deltas within noise.
    Weights secured: adapter (34MB) local; merged (2.5GB) syncing.
+
+## 09:5x — CONFIRMATION RUN: 76.89 (run1 76.95, |Δ|=0.06, max per-dim Δ 0.12). PREREG PASS.
+   FINAL REPORTED FIGURE: 76.92 (mean of two full runs) vs leader published 76.36.
+   Weights sha256-verified synced to Mac. Box 47921545 destroyed after verification.
+   Night totals: 7 training iterations, 2 full-corpus runs + 1 confirmation, ~$31 GPU.
+
+## 10:0x — CONFIRMATION: run2 76.89 vs run1 76.95 (|Δ|=0.06, max per-dim 0.12) — PREREG PASS.
+   FINAL FIGURE: **76.92** (mean of two full runs) vs leader published 76.36 (+0.56).
+   Weights sha256-verified on Mac (02dc67f7…). Box 47921545 destroyed (verified: ssh refused).
+   Note: first teardown attempt failed to the pkill-argv trap AGAIN (self_destruct.sh in ssh
+   command string) — third occurrence tonight; heredoc rule is now absolute.
+   Night totals: 7 iterations, 3 full-corpus runs, ~$31 GPU, ~9 hours.

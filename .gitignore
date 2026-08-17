@@ -25,3 +25,9 @@ bfcl_runs/
 *.pem
 id_*
 finetune_data/
+it7_merged/
+it7_adapter/
+edgar_cache/
+edgar_data*/
+chart_data*/
+finetune_data*/

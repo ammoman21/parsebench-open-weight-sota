@@ -2,7 +2,7 @@
 benchmark: parsebench
 model: florin-inc/florin-parser-nano
 results:
-  overall: 76.95
+  overall: 76.92  # mean of two full runs (76.95, 76.89)
   tables: 86.14
   charts: 65.39
   content_faithfulness: 87.35
@@ -11,5 +11,5 @@ results:
 notes: >
   LoRA fine-tune of KDLAI/KDL-Frontier-Parser-nano with emission patches; full-corpus
   run, all dimensions measured; chart LLM normaliser off; reproduction repo linked in
-  model card. Confirmation-run variance: PENDING.
+  model card. Two independent full runs: 76.95, 76.89 (delta 0.06).
 community_provided: true
