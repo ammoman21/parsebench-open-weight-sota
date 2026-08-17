@@ -103,3 +103,32 @@ markers the model actually emitted:
 == IT4 CF guard ==
   avg_content_faithfulness: 0.8719
 scored docs: 30 failed: 0
+== IT4 formatting ==
+  avg_rule_is_bold_pass_rate: 0.6575
+  avg_rule_is_sup_pass_rate: 0.6328
+  avg_semantic_formatting: 0.6648
+scored docs: 40 failed: 0
+  avg_semantic_formatting            66.48
+  avg_rule_is_bold_pass_rate         65.75
+  avg_rule_is_sup_pass_rate          63.28
+markers the model actually emitted:
+  bold_**      108
+  strike_~~    49
+  sup          24
+  bold_<b>     0
+  strike_tag   0
+== IT4 CF guard ==
+  avg_content_faithfulness: 0.8705
+scored docs: 30 failed: 0
+
+## it6 — REGRESSED: 66.48 (it5 67.59). Bold markers ~doubled (108) with precision drop;
+   sup fell to 63.28. Synthetic marginal returns exhausted; trajectory now oscillating
+   66-67.5. Champion checkpoint = it5.
+## 02:5x — CALIBRATION FULL RUN launched on it5 (patched pipeline, full 2,079 files,
+   output parsebench/output/it5_full). Purpose: real subset->corpus transfer coefficient +
+   formatting-category number (open-weight best on board: 69.30) + insurance-subset number
+   (leader reproduction: 74.77). ~70 min, ~$3.
+## EDGAR 3k harvest: 2,165/3,000 images so far. it7 = blend (synthetic strike/sup/sub +
+   EDGAR real bold) once harvest lands, trains DURING the full run? NO — GPU busy serving.
+   it7 trains after the full run completes. Sequencing: full run -> it7 -> it7 probe ->
+   (if it7 > it5) second full run on it7, else morning verdict on it5 numbers.
