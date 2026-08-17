@@ -182,3 +182,33 @@ scored docs: 30 failed: 0
    INSURANCE SUBSET corrected (scripts/insurance_subset_score.py on rescored reports):
      Visual Grounding 71.92 (29 pages) → insurance overall 77.07 vs leader-repro 74.77
      = +2.30 on insurance documents. Claim 3 stands on measured numbers, no carried terms.
+== IT4 formatting ==
+  avg_rule_is_bold_pass_rate: 0.7649
+  avg_rule_is_sup_pass_rate: 0.5635
+  avg_semantic_formatting: 0.7092
+scored docs: 40 failed: 0
+  avg_semantic_formatting            70.92
+  avg_rule_is_bold_pass_rate         76.49
+  avg_rule_is_sup_pass_rate          56.35
+markers the model actually emitted:
+  bold_**      386
+  strike_~~    60
+  sup          24
+  bold_<b>     0
+  strike_tag   0
+== IT4 CF guard ==
+  avg_content_faithfulness: 0.8693
+scored docs: 30 failed: 0
+
+## 08:1x — IT7 FULL RUN SCORED. THE NIGHT'S FINAL NUMBERS (all five dims, 100% doc coverage):
+   Tables 86.14 | Charts 65.39 | CF 87.35 | SemFmt 71.71 | Layout 74.15
+   OVERALL **76.95**
+   - vs leader's PUBLISHED 76.36:            **+0.59**  (their number; we could never
+     reproduce it — we measure their pipeline at 72.65 in our environment)
+   - vs the same pipeline in OUR environment: **+4.30**  (72.65 -> 76.95, apples-to-apples)
+   - vs board's best open-weight Semantic Formatting (69.30): **+2.41** — category claim real
+   INSURANCE SUBSET: **77.60** vs leader-repro 74.77 -> **+2.83** (formatting 73.17, +15.8 vs base)
+   Sanity: transfer subset->corpus held again (+3.33 predicted, +3.97 measured); Tables +0.62
+   unexplained bonus (possibly EDGAR bold in table headers; flagged, not load-bearing);
+   charts/layout deltas within noise.
+   Weights secured: adapter (34MB) local; merged (2.5GB) syncing.
