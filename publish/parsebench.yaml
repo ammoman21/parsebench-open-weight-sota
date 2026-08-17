@@ -1,0 +1,15 @@
+# .eval_results/parsebench.yaml — for the HF model repo per ParseBench submission docs
+benchmark: parsebench
+model: Florin/florin-parser-nano
+results:
+  overall: 76.95
+  tables: 86.14
+  charts: 65.39
+  content_faithfulness: 87.35
+  semantic_formatting: 71.71
+  visual_grounding: 74.15
+notes: >
+  LoRA fine-tune of KDLAI/KDL-Frontier-Parser-nano with emission patches; full-corpus
+  run, all dimensions measured; chart LLM normaliser off; reproduction repo linked in
+  model card. Confirmation-run variance: PENDING.
+community_provided: true
