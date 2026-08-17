@@ -146,3 +146,39 @@ scored docs: 30 failed: 0
    (71.97): insurance overall ~= (83.57+71.11+89.42+69.33+71.97)/5 = 77.08 vs leader-repro
    74.77 -> **+2.31 on insurance documents.** Claim 3 material, pending layout rescore.
 ## it7 launched (6,678 rows: 2,165 real EDGAR bold + synthetic strike/sup + negatives), ~50 min.
+
+## 2026-08-17 — LAYOUT RESCORE COMPLETE (it5_full). The 11.82 was pure eval artifact.
+   Mechanism (verified by stepping through, not assumed): the layout-adapter registry's
+   `create_layout_adapter` does NOT raise on an unknown provider key — it silently falls
+   back to the "__default__" adapter (parsebench/src/parse_bench/evaluation/
+   layout_adapters/registry.py:74-83, store = module-level list `_LAYOUT_ADAPTER_REGISTRY`
+   at registry.py:22). Because no exception is raised, the shape-based fallback matcher in
+   `create_layout_adapter_for_result` (registry.py:92-96) is unreachable whenever the
+   provider name RESOLVES but has no adapter — exactly our case: pipeline
+   "kdl_frontier_nano_patched" registers its provider name, but only "kdl_frontier_nano"
+   has an adapter (adapters.py:2876). Default adapter then raises "Inference output is not
+   LayoutOutput..." → 436/500 zeroed. Fix: ourparser/rescore_layout.py registers the
+   benchmark's own KdlFrontierNanoLayoutAdapter under the patched key via the public
+   `register_layout_adapter` decorator (adapter-alias registration at module top level so
+   spawn-restarted evaluation worker processes re-importing __mp_main__ get it too), then
+   re-runs evaluation-only for group layout from the saved outputs. No GPU, no inference,
+   no parsebench/src edits; reports rewritten ONLY in it5_full/.../layout/ (checksum-
+   verified: all other dims' report files byte-identical; broken report backed up at
+   ourparser/diag/it5_layout_evaluation_report.broken.json).
+   RESULT: 500/500 successful (was 64/436). avg_layout_element_rule_pass_rate = 74.37
+   (base model 74.19 → +0.18; plausible — fine-tuned language layers, layout head
+   untouched, and the "carried" assumption last night was almost exactly right).
+   Sub-metrics: localization 87.04 | classification 78.59 | attribution 85.06 |
+   reading order 79.47.
+
+   CORRECTED it5_full five-dimension table (full corpus, 2,078 pages):
+     Tables                 85.52
+     Charts                 65.54
+     Content Faithfulness   87.12
+     Semantic Formatting    67.74
+     Visual Grounding       74.37   (was 11.82 artifact / 74.19 carried)
+     OVERALL = (85.52+65.54+87.12+67.74+74.37)/5 = 76.06  vs leader 76.36 (-0.30)
+
+   INSURANCE SUBSET corrected (scripts/insurance_subset_score.py on rescored reports):
+     Visual Grounding 71.92 (29 pages) → insurance overall 77.07 vs leader-repro 74.77
+     = +2.30 on insurance documents. Claim 3 stands on measured numbers, no carried terms.
