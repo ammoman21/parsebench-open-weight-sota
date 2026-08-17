@@ -86,3 +86,20 @@ scored docs: 30 failed: 0
    path; 294 would-be hallucination examples). Caught by the mandatory eyeball gate before
    training. Fixed with explicit PingFang stack; regenerated: 0 blanks.
 ## it5 — LAUNCHED ~03:0x: 7k combined (5k general + 2k targeted CJK/CAPS/short-label), 2ep.
+== IT4 formatting ==
+  avg_rule_is_bold_pass_rate: 0.6707
+  avg_rule_is_sup_pass_rate: 0.6486
+  avg_semantic_formatting: 0.6759
+scored docs: 40 failed: 0
+  avg_semantic_formatting            67.59
+  avg_rule_is_bold_pass_rate         67.07
+  avg_rule_is_sup_pass_rate          64.86
+markers the model actually emitted:
+  bold_**      71
+  strike_~~    29
+  sup          25
+  bold_<b>     0
+  strike_tag   0
+== IT4 CF guard ==
+  avg_content_faithfulness: 0.8719
+scored docs: 30 failed: 0

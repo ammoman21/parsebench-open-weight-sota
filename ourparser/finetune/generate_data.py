@@ -72,6 +72,12 @@ CJK_SENT = ["國務院本月初公布了關於促進民航業發展的若干意�
     "保險監督管理委員會發布新規要求提高償付能力披露頻率",
     "再保險合約的分出比例將於下一財政年度起逐步調整"]
 CJK_MARK = ["【本報訊】", "【本報記者北京電】", "【特稿】", "【綜合報道】"]
+RISK_LABELS = ["Credit risk", "Liquidity risk", "Market risk", "Operational risk",
+    "Reinvestment risk", "Asset manager risk", "Concentration risk", "Longevity risk",
+    "Catastrophe risk", "Reserving risk", "Currency risk", "Counterparty risk"]
+HINDI_SENT = ["बीमा नियामक ने नई पूंजी आवश्यकताओं की घोषणा की है",
+    "दावों की आवृत्ति पिछली तिमाही की तुलना में बढ़ी है",
+    "पुनर्बीमा संधि का नवीनीकरण अगले वित्तीय वर्ष में होगा"]
 CAPS_LABELS = ["CREDIT RISK", "TOTAL ASSETS", "NET PREMIUMS EARNED", "LOSS RESERVES",
     "SECTION 4", "PART II", "EXHIBIT A", "UNDERWRITING RESULTS", "NOTES TO ACCOUNTS"]
 
@@ -98,7 +104,21 @@ def make_region(rng: random.Random, styled: bool) -> tuple[str, str]:
             mark = rng.choice(CJK_MARK)
             body = "".join(rng.sample(CJK_SENT, k=2)) + "。"
             return (f"<b>{mark}</b>{body}", f"**{mark}**{body}")
-        if r < 0.38:   # ALL-CAPS bold label, then body
+        if r < 0.32:   # multi-column risk glossary: bold label + definition, twice
+            items = rng.sample(RISK_LABELS, k=2)
+            h = "".join(f"<b>{l}</b><br>{_sentence(rng, list(SENTENCES))}<br>" for l in items)
+            m = "".join(f"**{l}**\n{s2}\n" for l, s2 in
+                        [(l, _sentence(rng, list(SENTENCES))) for l in items])
+            # note: html/md sentence pairs must match — rebuild consistently
+            pairs = [(l, _sentence(rng, list(SENTENCES))) for l in items]
+            h = "".join(f"<b>{l}</b><br>{t}<br>" for l, t in pairs)
+            m = "".join(f"**{l}**\n{t}\n" for l, t in pairs)
+            return h, m.rstrip()
+        if r < 0.40:   # Devanagari with bold lead-in (hindi doc failures)
+            lab = rng.choice(RISK_LABELS)
+            body = " ".join(rng.sample(HINDI_SENT, k=2))
+            return (f"<b>{lab}</b> {body}", f"**{lab}** {body}")
+        if r < 0.52:   # ALL-CAPS bold label, then body
             lab = rng.choice(CAPS_LABELS)
             body = " ".join(_sentence(rng, list(SENTENCES)) for _ in range(2))
             return (f"<b>{lab}</b><br>{body}", f"**{lab}**\n{body}")
