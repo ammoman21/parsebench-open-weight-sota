@@ -24,3 +24,4 @@ bfcl_runs/
 .vast_api_key
 *.pem
 id_*
+finetune_data/
