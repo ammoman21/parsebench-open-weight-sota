@@ -65,6 +65,16 @@ SENTENCES = [
 FOOTMARKS = ["1", "2", "3", "a", "b", "*"]
 CHEM = [("H", "2", "O"), ("CO", "2", ""), ("SO", "4", ""), ("CaCl", "2", "")]
 
+CJK_SENT = ["國務院本月初公布了關於促進民航業發展的若干意見",
+    "中國民用航空局局長今日透露現時國內外每天約有航班往來",
+    "據內地媒體報道多家高校研究團隊聯合發布了最新報告",
+    "香港民眾安全服務隊少年團二百名隊員完成了年度訓練",
+    "保險監督管理委員會發布新規要求提高償付能力披露頻率",
+    "再保險合約的分出比例將於下一財政年度起逐步調整"]
+CJK_MARK = ["【本報訊】", "【本報記者北京電】", "【特稿】", "【綜合報道】"]
+CAPS_LABELS = ["CREDIT RISK", "TOTAL ASSETS", "NET PREMIUMS EARNED", "LOSS RESERVES",
+    "SECTION 4", "PART II", "EXHIBIT A", "UNDERWRITING RESULTS", "NOTES TO ACCOUNTS"]
+
 FONTS = ['Georgia, serif', 'Helvetica, Arial, sans-serif', '"Times New Roman", serif',
          'Verdana, sans-serif', '"Courier New", monospace']
 
@@ -80,6 +90,18 @@ def _sentence(rng: random.Random, pool: list | None = None) -> str:
 
 def make_region(rng: random.Random, styled: bool) -> tuple[str, str]:
     """One region: returns (html_body, target_markdown)."""
+    # Targeted patterns from it4 failure analysis (86 residual bold failures:
+    # CJK newsprint datelines, ALL-CAPS labels, short section labels).
+    if styled:
+        r = rng.random()
+        if r < 0.22:   # CJK newsprint: bold bracketed dateline + body
+            mark = rng.choice(CJK_MARK)
+            body = "".join(rng.sample(CJK_SENT, k=2)) + "。"
+            return (f"<b>{mark}</b>{body}", f"**{mark}**{body}")
+        if r < 0.38:   # ALL-CAPS bold label, then body
+            lab = rng.choice(CAPS_LABELS)
+            body = " ".join(_sentence(rng, list(SENTENCES)) for _ in range(2))
+            return (f"<b>{lab}</b><br>{body}", f"**{lab}**\n{body}")
     html_parts: list[str] = []
     md_parts: list[str] = []
     n_sent = rng.randint(2, 5)
@@ -183,7 +205,10 @@ def render_batch(specs, out_paths, rng_styles) -> None:
     import PIL.Image, PIL.ImageChops
     pages = []
     for (html_body,), style in zip(specs, rng_styles):
+        has_cjk = any('\u4e00' <= ch <= '\u9fff' for ch in html_body)
         font, size, width, align = style
+        if has_cjk:
+            font = '"PingFang TC","Hiragino Sans","Songti TC",sans-serif' 
         pages.append(
             f'<div style="page-break-after: always; margin:0; padding:20px; '
             f'width:{width}px; font-family:{font}; font-size:{size}px; '

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teaching a Document Parser Where Bold Lives — Method Note</title>
+<style>
+  :root{ --paper:#FCFBF9; --ink:#1A1A18; --ink2:#40403C; --ink3:#6E6E68;
+    --rule:#DDD9D2; --acc:#345E4B; --acc2:#27493A; --wash:#EDF3EF;
+    --warn:#8C6A1D; --warnwash:#F7F1DF; --code:#F1EEE9; --loss:#8C3A2B; }
+  :root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
+    --paper:#12140F; --ink:#EAEAE3; --ink2:#BAB9AE; --ink3:#8A897E;
+    --rule:#2C2E26; --acc:#8CC3A8; --acc2:#A5D4BC; --wash:#17241D;
+    --warn:#D9B45E; --warnwash:#26200F; --code:#1D1F18; --loss:#E08A73; }}
+  :root[data-theme="dark"]{ --paper:#12140F; --ink:#EAEAE3; --ink2:#BAB9AE;
+    --ink3:#8A897E; --rule:#2C2E26; --acc:#8CC3A8; --acc2:#A5D4BC; --wash:#17241D;
+    --warn:#D9B45E; --warnwash:#26200F; --code:#1D1F18; --loss:#E08A73; }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);margin:0;
+    font-family:"Palatino","Palatino Linotype",Georgia,serif;
+    font-size:17.5px;line-height:1.66;-webkit-font-smoothing:antialiased}
+  .page{max-width:42rem;margin:0 auto;padding:3.2rem 1.5rem 6rem}
+  h1{font-size:1.95rem;line-height:1.22;font-weight:500;margin:.4rem 0 .6rem;text-wrap:balance}
+  h2{font-size:1.25rem;font-weight:500;margin:2.5rem 0 .6rem}
+  h2 .n{color:var(--acc);font-family:ui-monospace,"SF Mono",Menlo,monospace;
+    font-size:.75rem;font-weight:700;margin-right:.6rem;vertical-align:.15em}
+  p{margin:0 0 .95rem}
+  .byline{color:var(--ink3);font-size:.9rem;font-family:-apple-system,system-ui,sans-serif}
+  ul{margin:0 0 .95rem;padding-left:1.25rem} li{margin-bottom:.4rem}
+  strong{font-weight:700}
+  code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.84em;
+    background:var(--code);padding:.07em .32em;border-radius:3px}
+  .tw{overflow-x:auto;margin:1.2rem 0}
+  table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:26rem;
+    font-family:-apple-system,system-ui,sans-serif}
+  th{text-align:left;font-size:.67rem;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--ink3);font-weight:800;padding:.45rem .65rem;border-bottom:1.5px solid var(--ink)}
+  td{padding:.42rem .65rem;border-bottom:1px solid var(--rule);color:var(--ink2)}
+  td:first-child{color:var(--ink)}
+  .num{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;
+    text-align:right;white-space:nowrap;font-size:.8rem}
+  .up{color:var(--acc2);font-weight:700} .dn{color:var(--loss);font-weight:700}
+  .box{border-left:3px solid var(--acc);background:var(--wash);
+    padding:.8rem 1.05rem;margin:1.15rem 0;font-size:.95rem;border-radius:0 3px 3px 0}
+  .box .t{display:block;font-family:-apple-system,system-ui,sans-serif;font-size:.63rem;
+    letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--acc);margin-bottom:.3rem}
+  .box.w{border-color:var(--warn);background:var(--warnwash)} .box.w .t{color:var(--warn)}
+  .box p:last-child{margin-bottom:0}
+  .fn{font-size:.84rem;color:var(--ink3)}
+  hr{border:0;border-top:1px solid var(--rule);margin:2.3rem 0}
+</style>
+</head>
+<body><div class="page">
+
+<p class="byline">Method note · 17 August 2026 · overnight training session, written mid-run</p>
+<h1>Teaching a document parser where bold lives</h1>
+<p class="byline">Why we fine-tune, what exactly we train, and how each design choice traces to a measurement</p>
+
+<h2><span class="n">1</span>The problem, in one paragraph</h2>
+<p>The best open-weight document parser on ParseBench outputs plain text: across 23,802 output
+elements it emits <strong>zero</strong> inline formatting — no bold, strikethrough, superscript or
+subscript — because its prompts never ask for any. The benchmark's formatting dimension scores
+exactly those markers. And <strong>63.3% of the failed bold checks are text merged inside longer
+lines</strong>: the characters exist in the output but nothing separates them, so no
+post-processing script can ever find and wrap them. Only the model, at the moment it reads the
+image, knows what was bold. The fix must happen inside generation.</p>
+
+<h2><span class="n">2</span>Why not just ask? Because we measured that first</h2>
+<p>The obvious cheap fix is prompting: add "preserve bold as **text**" to the instruction. We ran
+that experiment four ways before training anything, and it produced the finding that dictates the
+entire training design:</p>
+
+<div class="tw"><table>
+<tr><th>Prompt variant</th><th class="num">Markers emitted</th><th class="num">Bold score</th><th class="num">Overall subset</th></tr>
+<tr><td>Untouched production prompt (control)</td><td class="num">0</td><td class="num">60.59</td><td class="num">60.35</td></tr>
+<tr><td>One added sentence</td><td class="num">43</td><td class="num">58.96</td><td class="num">61.06</td></tr>
+<tr><td>Superscript-only request ("no other formatting")</td><td class="num">27</td><td class="num">56.94</td><td class="num">59.85</td></tr>
+<tr><td>Explicit rules and examples</td><td class="num">1,729</td><td class="num dn">55.24</td><td class="num dn">57.63</td></tr>
+</table></div>
+
+<p>Two facts fall out. The model <em>can</em> write the syntax — 1,729 markers on request — but it
+marks the wrong things, so the score falls as compliance rises. And bold degrades
+<strong>monotonically with how much the prompt was changed</strong>, even when the change asked
+for less: this 1.2-billion-parameter specialist is keyed so tightly to its training prompt that
+any perturbation damages its core behaviour. Knowing <em>where</em> bold belongs is judgment, and
+judgment is what fine-tuning installs and prompting cannot.</p>
+
+<h2><span class="n">3</span>What we actually train: a LoRA adapter</h2>
+<p>We do not retrain the model. LoRA (low-rank adaptation) freezes all 1.2B original weights and
+learns small correction matrices — about 24M parameters, 2% of the model — that are added to the
+attention and feed-forward layers at run time. Intuition: the model is a finished machine; LoRA
+installs small trim tabs on the control surfaces rather than rebuilding the engine. Three reasons
+it fits here: the change we want is a narrow output behaviour, not new knowledge; small adapters
+disturb existing behaviour least (and §2 proved this model punishes disturbance); and a run costs
+15 minutes and ~$0.70, so we can iterate many times inside one night's budget.</p>
+
+<h2><span class="n">4</span>Every design choice, traced to the measurement that forced it</h2>
+<ul>
+<li><strong>Train on region crops, not pages</strong> — because the pipeline's text stage never
+sees a page: a layout stage crops each region first and sends the crop. We traced this in its
+source. Training on the deployment distribution, not an idealised one.</li>
+<li><strong>The prompt in every training example is the production string, byte for byte</strong>
+(<code>"\nText Recognition:\n"</code>) — because §2 showed any prompt change costs 2–5 points
+before training even starts. We change what the model <em>does with its existing trigger</em>,
+never the trigger.</li>
+<li><strong>Vision layers frozen</strong> — the model's localisation is its strongest sub-metric
+(0.869); perception was never the problem. Freezing it protects the Tables score (85.8) from
+collateral damage and halves what can go wrong.</li>
+<li><strong>Loss on the answer tokens only</strong> — the prompt is masked out of training so the
+model is never taught to generate its own instructions, only better answers to them.</li>
+<li><strong>~30% of examples contain no styling at all</strong>, with plain-text targets — because
+§2's failure mode was indiscriminate marking. Negatives are how a model learns restraint;
+without them we would burn the "mark everything" failure into the weights permanently.</li>
+<li><strong>Synthetic data rendered from markup we control</strong> — pages are generated as HTML
+with known bold runs, superscript footnote marks, struck-through clauses, then rendered to
+images. The target markdown is therefore exact by construction, not annotated by a human or
+inferred by a bigger model. Using the benchmark's own annotations would be training on the test;
+distilling from a larger model would inherit its errors.</li>
+<li><strong>Only scorer-accepted spellings in targets</strong> (<code>**bold**</code>,
+<code>~~strike~~</code>, <code>&lt;sup&gt;</code>/<code>&lt;sub&gt;</code>) and deliberately
+<em>no</em> underline or italic — we verified by executing the scorer that those two are
+annotated but counted in no score. Teaching them would add noise for zero points.</li>
+<li><strong>Insurance-flavoured content</strong> — the corpus this transfers to is majority
+rate filings in its table section; lexical and visual similarity is part of transfer.</li>
+</ul>
+
+<h2><span class="n">5</span>Why the training loop is 90 lines we wrote ourselves</h2>
+<p>The first three attempts used the standard framework (LLaMA-Factory) and all three produced
+NaN — "not a number", the state a computation enters after dividing by zero or overflowing, which
+poisons every weight it touches. Gradients were NaN from the tenth step in every configuration,
+including the textbook fixes. The decisive experiment cost two minutes: a bare forward pass
+through the model with plain transformers was numerically clean in both precisions. So the
+checkpoint was fine and the framework's training path was breaking it — this is a custom
+1.2B variant the framework evidently mishandles.</p>
+<div class="box"><span class="t">The principle</span>
+<p>When a black box misbehaves and the night is finite, replace it with the smallest system you
+can fully verify. Our loop is ~90 lines: load, encode exactly as production encodes, mask the
+prompt, step the optimiser, and <strong>assert the loss is finite at every step</strong> — it
+halts loudly rather than logging zeros over a corpse, which is precisely how the framework hid
+its own failure.</p></div>
+
+<h2><span class="n">6</span>The evaluation harness around the loop</h2>
+<p>Each iteration is judged in minutes, not hours: a fixed 40-document slice of the formatting
+dimension scores in ~2 minutes for ~10¢, and a second 30-document slice of the faithfulness
+dimension acts as a tripwire — a model taught to emit markup can start hallucinating it, and any
+faithfulness drop beyond 0.3 points disqualifies the checkpoint regardless of formatting gains.
+Full-corpus runs (~70 min, ~$3) are reserved for checkpoints that clear a pre-registered bar
+(70 on the subset). Decisions between iterations follow a written decision tree agreed before
+the night started, so 3am choices follow rules, not mood.</p>
+
+<h2><span class="n">7</span>Did it work? First evidence</h2>
+<div class="tw"><table>
+<tr><th></th><th class="num">Control</th><th class="num">Best prompt</th><th class="num">First fine-tune (it3)</th></tr>
+<tr><td>Formatting subset</td><td class="num">60.35</td><td class="num">61.06</td><td class="num up">66.52</td></tr>
+<tr><td>Bold sub-score</td><td class="num">60.59</td><td class="num dn">58.96</td><td class="num up">64.96</td></tr>
+<tr><td>Superscript sub-score</td><td class="num">0.00</td><td class="num">1.01</td><td class="num up">64.86</td></tr>
+<tr><td>Faithfulness tripwire</td><td class="num">86.89</td><td class="num">—</td><td class="num up">87.02</td></tr>
+</table></div>
+<p>The signature matters more than the size: prompting traded bold away to gain superscript;
+training <strong>raised both at once</strong>, with targeted emission (37 bold markers across 40
+documents, versus the prompt's 1,729 spray) and an untouched tripwire. That is what installed
+judgment looks like, and it is the difference between the two interventions.</p>
+
+<h2><span class="n">8</span>Honest limits</h2>
+<ul>
+<li>Subset scores are iteration signals, not corpus results; the 66.52 is comparable only to the
+60.35 measured the same way. The pre-registered full-corpus run is what counts.</li>
+<li>Rough transfer arithmetic puts formatting gains at roughly +1.2 overall — reaching ~76.0
+against the leader's published 76.36. <strong>At the line, not past it.</strong> The chart
+dimension is the second lever being prepared.</li>
+<li>Synthetic pages are cleaner than real scans; some gap between our rendered training data and
+the benchmark's messy documents is expected and unmeasured until the full run.</li>
+<li>The base model is another team's work (KoreaDeepLearning, AGPL). What we publish is an
+adapter and method on top of it, attributed as such.</li>
+</ul>
+
+<hr>
+<p class="fn"><strong>One sentence.</strong> Measurement showed the capability existed but the
+judgment didn't, and that the model punishes prompt changes — so we install the judgment directly
+in the weights, with the production prompt untouched, negatives to teach restraint, a
+self-verifying 90-line loop after the framework lied to us, and a tripwire so the cure can't be
+worse than the disease.</p>
+
+</div></body></html>

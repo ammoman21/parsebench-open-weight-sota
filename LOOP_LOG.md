@@ -60,3 +60,29 @@ scored docs: 30 failed: 0
 ## Rough transfer math (subset gains are NOT corpus-comparable, but directionally):
    corpus formatting 62.02 + ~6 -> ~68 => overall ~76.0. Charts fine-tune is the
    remaining lever to clear 76.36 with margin — orthogonal, needs its own box.
+== IT4 formatting ==
+  avg_rule_is_bold_pass_rate: 0.6439
+  avg_rule_is_sup_pass_rate: 0.6486
+  avg_semantic_formatting: 0.6612
+scored docs: 40 failed: 0
+  avg_semantic_formatting            66.12
+  avg_rule_is_bold_pass_rate         64.39
+  avg_rule_is_sup_pass_rate          64.86
+markers the model actually emitted:
+  bold_**      56
+  sup          25
+  strike_~~    12
+  bold_<b>     0
+  strike_tag   0
+== IT4 CF guard ==
+  avg_content_faithfulness: 0.8715
+scored docs: 30 failed: 0
+
+## it4 — FLAT (66.12 vs it3 66.52). 2.5x same-distribution data + 3ep bought nothing.
+## FAILURE ANALYSIS (free, per-rule): 86 residual bold failures are patterns ABSENT from
+   the synthetic mix — CJK newsprint datelines (【本報訊】), ALL-CAPS labels (28), short
+   section labels. Transfer ceiling, not a training problem.
+## DATA INCIDENT: first CJK batch rendered BLANK (Latin-only font stacks in Chrome print
+   path; 294 would-be hallucination examples). Caught by the mandatory eyeball gate before
+   training. Fixed with explicit PingFang stack; regenerated: 0 blanks.
+## it5 — LAUNCHED ~03:0x: 7k combined (5k general + 2k targeted CJK/CAPS/short-label), 2ep.
