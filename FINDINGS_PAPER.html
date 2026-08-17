@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reproducing the ParseBench Open-Weight Leader: Three Scorer Defects, a Pipeline Bug, and a Corpus Characterisation</title>
+<style>
+  :root{
+    --paper:#FCFBF9; --ink:#1A1A18; --ink2:#40403C; --ink3:#6E6E68;
+    --rule:#DDD9D2; --rubric:#8C3A2B; --rubric2:#732E22; --wash:#F6EFEC;
+    --gain:#2C6048; --loss:#8C3A2B; --code:#F1EEE9;
+  }
+  :root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
+    --paper:#14140F; --ink:#EDEAE3; --ink2:#BCB8AE; --ink3:#8B877E;
+    --rule:#2E2E27; --rubric:#E08A73; --rubric2:#EFA48F; --wash:#251A16;
+    --gain:#7FC9A6; --loss:#E08A73; --code:#1E1E18;
+  }}
+  :root[data-theme="dark"]{
+    --paper:#14140F; --ink:#EDEAE3; --ink2:#BCB8AE; --ink3:#8B877E;
+    --rule:#2E2E27; --rubric:#E08A73; --rubric2:#EFA48F; --wash:#251A16;
+    --gain:#7FC9A6; --loss:#E08A73; --code:#1E1E18;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);margin:0;
+    font-family:"Palatino","Palatino Linotype","Book Antiqua",Georgia,serif;
+    font-size:17.5px;line-height:1.66;-webkit-font-smoothing:antialiased}
+  .page{max-width:44rem;margin:0 auto;padding:3.5rem 1.5rem 7rem}
+  h1{font-size:2.05rem;line-height:1.2;font-weight:500;margin:.5rem 0 .7rem;text-wrap:balance}
+  h2{font-size:1.32rem;font-weight:500;margin:2.8rem 0 .7rem;line-height:1.25;text-wrap:balance}
+  h2 .n{color:var(--rubric);font-family:ui-monospace,"SF Mono",Menlo,monospace;
+    font-size:.78rem;font-weight:700;letter-spacing:.06em;margin-right:.7rem;vertical-align:.18em}
+  h3{font-size:1.02rem;font-weight:700;margin:1.7rem 0 .4rem;
+    font-family:-apple-system,"Segoe UI",system-ui,sans-serif}
+  p{margin:0 0 1rem}
+  .sans{font-family:-apple-system,"Segoe UI",system-ui,sans-serif}
+  .byline{color:var(--ink3);font-size:.92rem;font-family:-apple-system,system-ui,sans-serif}
+  .abstract{border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);
+    padding:1.3rem 0;margin:1.8rem 0 2.4rem}
+  .abstract .lbl{font-family:-apple-system,system-ui,sans-serif;font-size:.66rem;
+    letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--rubric);
+    display:block;margin-bottom:.5rem}
+  .abstract p{margin-bottom:.7rem}
+  .abstract p:last-child{margin-bottom:0}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem}
+  li{margin-bottom:.42rem}
+  strong{font-weight:700}
+  code,.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.84em;
+    background:var(--code);padding:.08em .34em;border-radius:3px}
+  .tw{overflow-x:auto;margin:1.35rem 0}
+  table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:29rem;
+    font-family:-apple-system,"Segoe UI",system-ui,sans-serif}
+  caption{caption-side:top;text-align:left;font-family:-apple-system,system-ui,sans-serif;
+    font-size:.76rem;color:var(--ink3);padding-bottom:.5rem;line-height:1.45}
+  caption b{color:var(--rubric);font-weight:800;letter-spacing:.04em}
+  th{text-align:left;font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--ink3);font-weight:800;padding:.5rem .7rem;border-bottom:1.5px solid var(--ink)}
+  td{padding:.46rem .7rem;border-bottom:1px solid var(--rule);color:var(--ink2)}
+  tr:last-child td{border-bottom:1px solid var(--ink)}
+  td:first-child{color:var(--ink)}
+  .num{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums;
+    text-align:right;white-space:nowrap;font-size:.81rem}
+  .up{color:var(--gain);font-weight:700}
+  .dn{color:var(--loss);font-weight:700}
+  blockquote{margin:1.25rem 0;padding:.85rem 1.1rem;background:var(--wash);
+    border-left:3px solid var(--rubric);font-size:.96rem}
+  blockquote p:last-child{margin-bottom:0}
+  .key{font-family:-apple-system,system-ui,sans-serif;font-size:.63rem;letter-spacing:.15em;
+    text-transform:uppercase;font-weight:800;color:var(--rubric);display:block;margin-bottom:.3rem}
+  hr{border:0;border-top:1px solid var(--rule);margin:2.6rem 0}
+  .fn{font-size:.85rem;color:var(--ink3)}
+  a{color:var(--rubric2)}
+  :focus-visible{outline:2px solid var(--rubric);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="byline">Draft · 16 August 2026 · not yet submitted</p>
+<h1>Reproducing the ParseBench open-weight leader</h1>
+<p class="byline">Three defects in the scorer, one bug in the leading pipeline, and a corpus that is
+majority insurance regulatory filings</p>
+
+<div class="abstract">
+  <span class="lbl">Abstract</span>
+  <p>We attempted to reproduce the leading open-weight entry on ParseBench, a document-parsing
+  benchmark, and could not. We measure <strong>72.65</strong> against its published
+  <strong>76.36</strong>, with three of five dimensions matching within 0.3 points and two missing
+  badly. A control experiment on a second, unrelated pipeline reproduced its published chart score
+  exactly, establishing that the scoring is sound and the deficits are specific to the pipeline under
+  test rather than to our setup.</p>
+  <p>Investigating the two deficits surfaced four defects. <strong>In the benchmark:</strong> the chart
+  rule silently rejects correct data extraction when the chart title is not rendered bold; three
+  annotated style categories — underline, italic and highlight — contribute to no score at all, which
+  is undocumented; and the bold check credits heading markup, which for a pipeline emitting no inline
+  markup makes the formatting dimension movable by reformatting alone. <strong>In the leading
+  pipeline:</strong> no raw layout label it emits reaches the category carrying 18.4% of all
+  visual-grounding rules, and the code branch that would render that category is unreachable.</p>
+  <p>We also characterise the corpus: <strong>57.7% of the Tables dimension is insurance rate
+  filings</strong>, and the leading pipeline scores 3.73 points worse on them than on the remainder.
+  Repairing only what is defensible as a defect fix raises our reproduction by 1.99 points to 74.64;
+  we make no ranking claim. All measurement code, saved measurement records and pinned upstream
+  commits are released.</p>
+</div>
+
+<h2><span class="n">1</span>Contributions</h2>
+<p>The defects have two different owners, which matters for who should fix them.</p>
+<p><strong>Three are in the benchmark's scoring:</strong></p>
+<ol>
+  <li>A <strong>chart rule requiring bold titles</strong>, penalising correct data extraction on
+  typographic grounds (§3).</li>
+  <li><strong>Three annotated categories with zero weight</strong> — graded in the dataset, scored in
+  no category, not documented (§4).</li>
+  <li>A <strong>bold/heading coupling</strong> that makes the formatting dimension movable without
+  improving parsing. We demonstrate it and decline to use it (§5).</li>
+</ol>
+<p><strong>One is in the leading pipeline:</strong></p>
+<ol start="4">
+  <li>An <strong>unreachable category</strong>: no raw layout label the pipeline emits maps to
+  <code>Section-header</code>, which carries 18.4% of grounding rules, and the branch rendering it is
+  dead code (§3).</li>
+</ol>
+<p><strong>Plus:</strong> a corpus characterisation showing the Tables dimension is majority insurance
+regulatory filings (§6), and our own results with their limits (§8–9).</p>
+
+<h2><span class="n">2</span>Method</h2>
+<p>ParseBench grades deterministically by fixed rules, so a run is reproducible and a discrepancy
+is meaningful rather than sampling noise. We ran the benchmark's own evaluation code, at a pinned commit,
+using its own default metric per dimension, and compared against the scores its maintainers publish.
+No file inside the upstream checkout was modified.</p>
+
+<p>Two techniques did most of the work. First, we read <strong>per-item failure records</strong>
+rather than aggregate scores — the benchmark publishes, alongside each score, a record per failed item
+including the raw model output. Nearly every finding here came from reading those. Second, we
+built a <strong>replay harness</strong> that reconstructs a parser's final output byte-identically
+from stored per-element artifacts and re-scores it with the benchmark's own rule classes, so
+changes to output formatting are measurable without re-running inference. It reproduces the vendored
+functions byte-for-byte across 2,041 artifacts and aborts if that check fails.</p>
+
+<p>One control experiment is load-bearing. When we could not reproduce one pipeline's score, the
+cause could have been our configuration or its environment. We therefore ran a second, unrelated
+pipeline with its own published scores: it reproduced its published chart score <em>exactly</em>
+(65.10 against 65.10) and its formatting score within 3.17. A fault in our setup would have moved
+both. It did not.</p>
+
+<h2><span class="n">3</span>A category the leading pipeline cannot emit</h2>
+<p>ParseBench scores document parsing over ~2,079 pages across five dimensions using 169,011
+deterministic rule checks. We reproduced its leading open-weight entry — a 1.2-billion-parameter
+model — over the complete corpus.</p>
+
+<div class="tw"><table>
+  <caption><b>Table 1</b> — Our reproduction of the published open-weight leader, scored with the
+  benchmark's own default metric per dimension.</caption>
+  <tr><th>Dimension</th><th class="num">Files</th><th class="num">Ours</th><th class="num">Published</th><th class="num">Δ</th></tr>
+  <tr><td>Content Faithfulness</td><td class="num">506</td><td class="num">87.18</td><td class="num">87.19</td><td class="num">−0.01</td></tr>
+  <tr><td>Tables</td><td class="num">503</td><td class="num">85.76</td><td class="num">85.56</td><td class="num">+0.20</td></tr>
+  <tr><td>Charts</td><td class="num">568</td><td class="num">63.69</td><td class="num">63.41</td><td class="num">+0.28</td></tr>
+  <tr><td>Visual Grounding</td><td class="num">500</td><td class="num">74.19</td><td class="num">78.84</td><td class="num dn">−4.65</td></tr>
+  <tr><td>Semantic Formatting</td><td class="num">476</td><td class="num">52.42</td><td class="num">66.81</td><td class="num dn">−14.39</td></tr>
+  <tr><td><strong>Overall</strong></td><td class="num"></td><td class="num">72.65</td><td class="num">76.36</td><td class="num dn">−3.71</td></tr>
+</table></div>
+
+<p>Three dimensions reproduce; two do not. Investigating grounding, the sub-scores localise the
+problem: <em>localization</em> — whether predicted regions land in the right place — is the pipeline's
+strongest sub-metric at 0.869, while <em>classification</em> is its weakest at 0.784. The boxes are
+right; the labels on them are wrong.</p>
+
+<p>The pipeline converts each raw layout label the model emits into a benchmark category through a
+26-key lookup table. Any label absent from that table falls through to <code>Text</code>. Across all
+2,078 stored artifacts, the category <code>Section-header</code> is emitted <strong>zero times</strong>,
+and the branch of code that would render it is unreachable. Meanwhile the ground truth's second-largest
+class carries <strong>3,001 rules — 18.4% of all 16,325 grounding rules.</strong></p>
+
+<p>Probing the conversion function directly shows the failure is spelling-sensitive, which is why it
+had gone unnoticed:</p>
+
+<blockquote>
+  <span class="key">raw label → resulting category</span>
+  <p><code>section-header</code> → <code>Section-header</code> &nbsp;(canonicalisation rescues it)<br>
+  <code>section_header</code> → <code>Text</code><br>
+  <code>paragraph_title</code> → <code>Text</code><br>
+  <code>sub_title</code> → <code>Text</code></p>
+</blockquote>
+
+<p>One spelling survives; three fall through silently. <strong>We cannot yet report the size of this
+effect</strong>, and the reason is itself worth recording: the stored artifacts persist only the
+<em>mapped</em> category, never the raw label, so which spelling the model emits is unrecoverable from
+published run outputs. Establishing it requires re-running inference with the conversion instrumented.
+We have released that instrumentation; the measurement is pending.</p>
+
+<h2><span class="n">4</span>A chart rule that requires bold titles</h2>
+<p>ParseBench's chart dimension checks whether annotated data points were extracted with correct
+labels. Its rule accepts a chart's title label only when that title is rendered as bold or as a
+heading. A parser that extracts every data point correctly but renders the chart title as plain text
+loses those points.</p>
+
+<p>This is measurable as a side effect: adding bold markup elsewhere in the output, with no change
+whatever to chart extraction, <strong>raised the chart score from 63.69 to 64.95</strong>. The
+extraction did not improve. Only the typography did.</p>
+
+<h2><span class="n">5</span>Three annotated categories with zero weight</h2>
+<p>The dataset carefully annotates underline, italic and highlight spans. None of them belongs to any
+scored category — the styling sub-score is assembled from bold, strikethrough, superscript and
+subscript only. This is visible in the benchmark's own output: a page carrying two underline rules
+and one strikethrough rule reports that only the strikethrough was counted.</p>
+
+<p>The consequence is wasted effort rather than a wrong score, and it is undiscoverable from the
+documentation. We spent most of a working day on underline before measuring that its ceiling is
+exactly zero. Either the annotations should be scored or their status should be stated.</p>
+
+<h2><span class="n">6</span>A coupling that makes the formatting dimension movable</h2>
+<p>The formatting dimension's bold check accepts two kinds of evidence: an explicit bold marker, or
+the annotated text appearing on a heading line. The second is reasonable — headings render bold.</p>
+
+<p>But the leading pipeline emits <strong>no inline markup at all</strong>. Across 23,802 elements from
+1,196 documents there is not one bold, underline, strikethrough, superscript or subscript marker. The
+cause is its prompts: the complete instruction set to the model is five bare strings
+(<code>"Text Recognition:"</code> and four siblings), with no formatting request anywhere in 3,323
+lines. The model is never asked.</p>
+
+<p>Those two facts compose badly. If a pipeline emits no bold markers, <strong>100% of its bold credit
+must arrive through the heading route</strong> — so promoting additional lines to headings raises the
+bold score without detecting any bold. We verified this: promoting short body-text lines and list items
+to headings, changing nothing about reading accuracy, moves the overall score by three points, and a
+single twenty-line output transformation is enough to exceed the published leader.</p>
+
+<p>We report this rather than submit it. It is a property of the scorer, not of any parser. A robust
+fix is to require an explicit marker when the annotated span is not itself a heading in the ground
+truth.</p>
+
+<h2><span class="n">7</span>The corpus is majority insurance in one dimension</h2>
+<p>We characterised the corpus by three independent passes — filenames, all 169,011 ground-truth rule
+strings, and the text layer of 2,037 PDFs — inspecting every candidate individually. <strong>384 of
+2,079 documents (18.5%) are insurance</strong>, but they are heavily concentrated.</p>
+
+<div class="tw"><table>
+  <caption><b>Table 2</b> — Insurance content by dimension. Tables is majority insurance: 193 SERFF
+  rate-filing pages (the electronic system through which US carriers file rates with state
+  regulators), 78 further pages from auto and farm property-casualty filings, plus Solvency II reports
+  and life-insurer financial statements.</caption>
+  <tr><th>Dimension</th><th class="num">Insurance files</th><th class="num">Total</th><th class="num">Insurance share of rules</th></tr>
+  <tr><td>Tables</td><td class="num">290</td><td class="num">503</td><td class="num up">57.7%</td></tr>
+  <tr><td>Charts</td><td class="num">40</td><td class="num">568</td><td class="num">7.5%</td></tr>
+  <tr><td>Semantic Formatting</td><td class="num">24</td><td class="num">476</td><td class="num">5.8%</td></tr>
+  <tr><td>Content Faithfulness</td><td class="num">25</td><td class="num">506</td><td class="num">4.7%</td></tr>
+  <tr><td>Visual Grounding</td><td class="num">29</td><td class="num">500</td><td class="num">4.5%</td></tr>
+</table></div>
+
+<p>The leading pipeline scores <strong>84.18 on insurance tables against 87.91 on the remainder — 3.73
+points worse.</strong> Regulatory rate filings are denser and more deeply nested than the average
+enterprise page. Anyone reporting a Tables score on this benchmark is largely reporting a score on
+insurance regulatory documents, which is worth knowing whether or not one works in insurance.</p>
+
+<h2><span class="n">8</span>Our own results</h2>
+<p>Having diagnosed the formatting deficit as an emission problem, we repaired what could honestly be
+called defects: deriving heading levels from geometry the pipeline already had, adding the missing
+category-map key, and restoring bold on run-in label prefixes that <em>are</em> bold in the source
+documents. We trained nothing.</p>
+
+<div class="tw"><table>
+  <caption><b>Table 3</b> — Measured by replay over the full corpus. The submitted set contains only
+  changes defensible as defect repairs; the aggressive set is disclosed for transparency and was not
+  submitted. Neither clears the published leader.</caption>
+  <tr><th>Configuration</th><th class="num">Sem. Fmt</th><th class="num">Charts</th><th class="num">Overall</th><th class="num">vs our baseline</th></tr>
+  <tr><td>Our reproduction of the leader</td><td class="num">52.42</td><td class="num">63.69</td><td class="num">72.65</td><td class="num">—</td></tr>
+  <tr><td><strong>Submitted (defect repairs only)</strong></td><td class="num">61.20</td><td class="num">64.95</td><td class="num">74.64</td><td class="num up">+1.99</td></tr>
+  <tr><td>Aggressive (disclosed, not submitted)</td><td class="num">66.30</td><td class="num">65.05</td><td class="num">75.65</td><td class="num">+3.00</td></tr>
+</table></div>
+
+<p>We make <strong>no ranking claim.</strong> Our submitted configuration scores 74.64 ± 0.2, which is
+1.72 points below the leader's published 76.36 — and since we reproduce that same pipeline at 72.65
+rather than 76.36, the honest statement is a measured improvement of 1.99 points over our own
+reproduction. All deltas are against our baseline, never against a published row we could not
+reproduce.</p>
+
+<h2><span class="n">9</span>Limitations</h2>
+<ul>
+  <li><strong>The reproduction gap is unexplained.</strong> We account for the formatting deficit's
+  mechanism but not why our run differs from the published one by 3.71 points overall. Two candidate
+  causes — an optional chart normaliser and output truncation — were tested and eliminated.</li>
+  <li><strong>The grounding effect is unquantified.</strong> §3 establishes the mechanism, not its
+  size, because published artifacts discard the raw labels needed to measure it.</li>
+  <li><strong>Uncertainty.</strong> The submitted figure carries ±0.2; provider-level transfer error is
+  unmeasured on 157 of 476 documents. Two dimensions were verified invariant under our changes rather
+  than recomputed.</li>
+  <li><strong>The map-key repair contributes exactly zero</strong> to any number reported here, for the
+  reason in §3. It ships because the defect is real by inspection, not because it was measured.</li>
+  <li><strong>Insurance sub-scores outside Tables rest on 24–40 pages</strong> and are directional; no
+  confidence intervals were computed.</li>
+  <li><strong>One figure is inherited</strong> rather than re-measured: the twenty-line transformation
+  in §6 exceeding the leader comes from an earlier measurement pass we did not repeat.</li>
+</ul>
+
+<h2><span class="n">10</span>Reproducibility</h2>
+<p>Measurement code, the replay harness, saved measurement records for every figure, and the pinned
+upstream commit are released. The harness enforces two guarantees and aborts if
+either fails: our re-implementations reproduce the vendored functions byte-for-byte across 2,041
+artifacts, and the patched provider reproduces its replay measurement to ten decimal places through
+the same code path live inference uses. Every figure above is re-derivable without a GPU except the
+pending §4 measurement, which requires one instrumented inference run.</p>
+
+<hr>
+<p class="fn">Correspondence and corrections welcome. We would rather these defects were fixed than
+cited — three of the four are one-line repairs, and all four affect published numbers that other
+people are currently comparing.</p>
+
+</div>
+</body>
+</html>

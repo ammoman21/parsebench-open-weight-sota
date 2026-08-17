@@ -39,6 +39,7 @@ _lock = threading.Lock()
 _records: list[dict[str, Any]] = []
 _counts: collections.Counter = collections.Counter()
 _unmapped: collections.Counter = collections.Counter()
+_hook_calls: collections.Counter = collections.Counter()
 
 
 def capture_dir() -> Path | None:
@@ -71,21 +72,43 @@ def label_capture() -> Iterator[None]:
         yield
         return
 
-    original = K._category_for_item
+    # Two hooks, because the first alone observed nothing on a live smoke run.
+    #  (a) _category_for_item — the map lookup itself.
+    #  (b) parse_native_layout_tokens — the single page-level entry point
+    #      (called once per page at kdl_frontier_nano.py:3094). Its returned dicts
+    #      come from NormalizedNativeLayoutItem, which carries raw_category.
+    # Whichever fires, we capture. `hook_calls` records which did, so a silent
+    # miss is visible in the report instead of looking like "no elements".
+    orig_cat = K._category_for_item
+    orig_tok = K.parse_native_layout_tokens
 
-    def wrapped(item: Any, metadata: dict[str, Any]) -> str:
-        category = original(item, metadata)
+    def wrapped_cat(item: Any, metadata: dict[str, Any]) -> str:
+        category = orig_cat(item, metadata)
+        _hook_calls["_category_for_item"] += 1
         try:
             _observe(getattr(item, "raw_category", None), category, metadata or {})
         except Exception:
             pass  # instrumentation must never break a run
         return category
 
-    K._category_for_item = wrapped  # type: ignore[assignment]
+    def wrapped_tok(content: str) -> Any:
+        out = orig_tok(content)
+        _hook_calls["parse_native_layout_tokens"] += 1
+        try:
+            for d in out or []:
+                if isinstance(d, dict) and "raw_category" in d:
+                    _observe(d.get("raw_category"), d.get("category", "?"), d)
+        except Exception:
+            pass
+        return out
+
+    K._category_for_item = wrapped_cat  # type: ignore[assignment]
+    K.parse_native_layout_tokens = wrapped_tok  # type: ignore[assignment]
     try:
         yield
     finally:
-        K._category_for_item = original  # type: ignore[assignment]
+        K._category_for_item = orig_cat  # type: ignore[assignment]
+        K.parse_native_layout_tokens = orig_tok  # type: ignore[assignment]
         flush()
 
 
@@ -117,8 +140,10 @@ def report() -> str:
     with _lock:
         total = sum(_counts.values())
         if not total:
-            return "label capture: no elements observed"
+            return ("label capture: no elements observed | hook calls: "
+                    + (dict(_hook_calls).__repr__() if _hook_calls else "NONE — neither hook fired"))
         lines = [
+            f"hooks fired: {dict(_hook_calls)}",
             f"label capture: {total} elements, "
             f"{len({k[0] for k in _counts})} distinct raw labels, "
             f"{sum(_unmapped.values())} elements carried a label ABSENT from the map"

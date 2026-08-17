@@ -1,0 +1,146 @@
+{
+ "total_elements": 89736,
+ "distinct_raw_labels": 22,
+ "unmapped_label_counts": {},
+ "unmapped_element_total": 0,
+ "by_raw_label": [
+  {
+   "raw_category": "text",
+   "category": "Text",
+   "raw_in_map": true,
+   "n": 36802
+  },
+  {
+   "raw_category": "title",
+   "category": "Title",
+   "raw_in_map": true,
+   "n": 11986
+  },
+  {
+   "raw_category": "header",
+   "category": "Page-header",
+   "raw_in_map": true,
+   "n": 5912
+  },
+  {
+   "raw_category": "list_item",
+   "category": "List-item",
+   "raw_in_map": true,
+   "n": 5264
+  },
+  {
+   "raw_category": "image",
+   "category": "Picture",
+   "raw_in_map": true,
+   "n": 5146
+  },
+  {
+   "raw_category": "image_caption",
+   "category": "Caption",
+   "raw_in_map": true,
+   "n": 3558
+  },
+  {
+   "raw_category": "footer",
+   "category": "Page-footer",
+   "raw_in_map": true,
+   "n": 3176
+  },
+  {
+   "raw_category": "page_number",
+   "category": "Page-footer",
+   "raw_in_map": true,
+   "n": 3168
+  },
+  {
+   "raw_category": "text",
+   "category": "List-item",
+   "raw_in_map": true,
+   "n": 2792
+  },
+  {
+   "raw_category": "table",
+   "category": "Table",
+   "raw_in_map": true,
+   "n": 2450
+  },
+  {
+   "raw_category": "image_footnote",
+   "category": "Footnote",
+   "raw_in_map": true,
+   "n": 2182
+  },
+  {
+   "raw_category": "chart",
+   "category": "Chart",
+   "raw_in_map": true,
+   "n": 1984
+  },
+  {
+   "raw_category": "table_caption",
+   "category": "Caption",
+   "raw_in_map": true,
+   "n": 1470
+  },
+  {
+   "raw_category": "aside_text",
+   "category": "Text",
+   "raw_in_map": true,
+   "n": 876
+  },
+  {
+   "raw_category": "ref_text",
+   "category": "List-item",
+   "raw_in_map": true,
+   "n": 870
+  },
+  {
+   "raw_category": "table_footnote",
+   "category": "Footnote",
+   "raw_in_map": true,
+   "n": 808
+  },
+  {
+   "raw_category": "page_footnote",
+   "category": "Footnote",
+   "raw_in_map": true,
+   "n": 710
+  },
+  {
+   "raw_category": "list",
+   "category": "List-item",
+   "raw_in_map": true,
+   "n": 370
+  },
+  {
+   "raw_category": "equation",
+   "category": "Formula",
+   "raw_in_map": true,
+   "n": 150
+  },
+  {
+   "raw_category": "code",
+   "category": "Text",
+   "raw_in_map": true,
+   "n": 26
+  },
+  {
+   "raw_category": "equation_block",
+   "category": "Formula",
+   "raw_in_map": true,
+   "n": 24
+  },
+  {
+   "raw_category": "code_caption",
+   "category": "Caption",
+   "raw_in_map": true,
+   "n": 8
+  },
+  {
+   "raw_category": "algorithm",
+   "category": "Text",
+   "raw_in_map": true,
+   "n": 4
+  }
+ ]
+}
