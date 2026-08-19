@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reproducing the ParseBench Open-Weight Leader: Three Scorer Defects, a Pipeline Bug, and a Corpus Characterisation</title>
+<title>Reproducing the ParseBench Open-Weight Leader: Three Scorer Defects, a Pipeline Bug, a Corpus Characterisation, and a Fine-Tune That Passes It Head-to-Head</title>
 <style>
   :root{
     --paper:#FCFBF9; --ink:#1A1A18; --ink2:#40403C; --ink3:#6E6E68;
@@ -75,10 +75,11 @@
 <body>
 <div class="page">
 
-<p class="byline">Draft · 16 August 2026 · not yet submitted</p>
+<p class="byline">Draft · revised 19 August 2026 · not yet submitted</p>
 <h1>Reproducing the ParseBench open-weight leader</h1>
-<p class="byline">Three defects in the scorer, one bug in the leading pipeline, and a corpus that is
-majority insurance regulatory filings</p>
+<p class="byline">Three defects in the scorer, one bug in the leading pipeline, a corpus that is
+majority insurance regulatory filings — and a fine-tune that passes the leader head-to-head in the
+same environment</p>
 
 <div class="abstract">
   <span class="lbl">Abstract</span>
@@ -97,9 +98,15 @@ majority insurance regulatory filings</p>
   visual-grounding rules, and the code branch that would render that category is unreachable.</p>
   <p>We also characterise the corpus: <strong>57.7% of the Tables dimension is insurance rate
   filings</strong>, and the leading pipeline scores 3.73 points worse on them than on the remainder.
-  Repairing only what is defensible as a defect fix raises our reproduction by 1.99 points to 74.64;
-  we make no ranking claim. All measurement code, saved measurement records and pinned upstream
-  commits are released.</p>
+  Repairing only what is defensible as a defect fix raises our reproduction by 1.99 points to 74.64.
+  Fine-tuning the model itself — a LoRA adapter (low-rank adaptation: the original weights stay
+  frozen and small correction matrices, ~2% of the model, are trained on top) that teaches it to
+  emit the inline formatting its prompts never request, production prompt unchanged — reaches
+  <strong>76.95 and 76.89 on two full runs (mean 76.92)</strong>: +4.30 over the same pipeline in
+  the same environment, which is our primary claim, and above the leader's published 76.36, a
+  comparison we report only with the caveat that we could not reproduce that published number. All
+  measurement code, saved measurement records, training code, weights and pinned upstream commits
+  are released.</p>
 </div>
 
 <h2><span class="n">1</span>Contributions</h2>
@@ -251,37 +258,103 @@ enterprise page. Anyone reporting a Tables score on this benchmark is largely re
 insurance regulatory documents, which is worth knowing whether or not one works in insurance.</p>
 
 <h2><span class="n">8</span>Our own results</h2>
-<p>Having diagnosed the formatting deficit as an emission problem, we repaired what could honestly be
-called defects: deriving heading levels from geometry the pipeline already had, adding the missing
-category-map key, and restoring bold on run-in label prefixes that <em>are</em> bold in the source
-documents. We trained nothing.</p>
+<p>Having diagnosed the formatting deficit as an emission problem, we first repaired what could
+honestly be called defects — deriving heading levels from geometry the pipeline already had, adding
+the missing category-map key, and restoring bold on run-in label prefixes that <em>are</em> bold in
+the source documents — training nothing. That set measures <strong>74.64</strong>, +1.99 over our
+reproduction. It also exposed the ceiling: 63.3% of the pipeline's failed bold checks are text
+merged inside longer lines, where no post-processing can reach, because only the model, at the
+moment it reads the image, knows what was bold.</p>
+
+<p>So we fine-tuned the model — trained a small adapter that teaches it to emit the inline
+formatting its prompts never ask for, with the production prompt left byte-identical (§8b) — and
+re-ran the complete benchmark, live, twice.</p>
 
 <div class="tw"><table>
-  <caption><b>Table 3</b> — Measured by replay over the full corpus. The submitted set contains only
-  changes defensible as defect repairs; the aggressive set is disclosed for transparency and was not
-  submitted. Neither clears the published leader.</caption>
+  <caption><b>Table 3</b> — Full-corpus results (2,079 files, all five dimensions, the benchmark's
+  own default metric per dimension). The patch-only row is measured by replay; the fine-tuned rows
+  are complete live inference runs. Two runs of the fine-tuned model agree to |Δ| = 0.06 overall
+  (max per-dimension difference 0.12), passing the preregistered 0.3 tolerance; the reported figure
+  is their mean, <b>76.92</b>.</caption>
   <tr><th>Configuration</th><th class="num">Sem. Fmt</th><th class="num">Charts</th><th class="num">Overall</th><th class="num">vs our baseline</th></tr>
   <tr><td>Our reproduction of the leader</td><td class="num">52.42</td><td class="num">63.69</td><td class="num">72.65</td><td class="num">—</td></tr>
-  <tr><td><strong>Submitted (defect repairs only)</strong></td><td class="num">61.20</td><td class="num">64.95</td><td class="num">74.64</td><td class="num up">+1.99</td></tr>
-  <tr><td>Aggressive (disclosed, not submitted)</td><td class="num">66.30</td><td class="num">65.05</td><td class="num">75.65</td><td class="num">+3.00</td></tr>
+  <tr><td>Patch-only (defect repairs, no training)</td><td class="num">61.20</td><td class="num">64.95</td><td class="num">74.64</td><td class="num up">+1.99</td></tr>
+  <tr><td><strong>Fine-tuned, full run 1</strong></td><td class="num">71.71</td><td class="num">65.39</td><td class="num">76.95</td><td class="num up">+4.30</td></tr>
+  <tr><td>Fine-tuned, confirmation run 2</td><td class="num"></td><td class="num"></td><td class="num">76.89</td><td class="num up">+4.24</td></tr>
 </table></div>
 
-<p>We make <strong>no ranking claim.</strong> Our submitted configuration scores 74.64 ± 0.2, which is
-1.72 points below the leader's published 76.36 — and since we reproduce that same pipeline at 72.65
-rather than 76.36, the honest statement is a measured improvement of 1.99 points over our own
-reproduction. All deltas are against our baseline, never against a published row we could not
-reproduce.</p>
+<div class="tw"><table>
+  <caption><b>Table 4</b> — The fine-tuned model, all five dimensions (run 1), against our
+  same-environment baseline and the leader's published row.</caption>
+  <tr><th>Dimension</th><th class="num">Fine-tuned</th><th class="num">Our baseline</th><th class="num">Published leader</th></tr>
+  <tr><td>Tables</td><td class="num">86.14</td><td class="num">85.76</td><td class="num">85.56</td></tr>
+  <tr><td>Charts</td><td class="num">65.39</td><td class="num">63.69</td><td class="num">63.41</td></tr>
+  <tr><td>Content Faithfulness</td><td class="num">87.35</td><td class="num">87.18</td><td class="num">87.19</td></tr>
+  <tr><td>Semantic Formatting</td><td class="num">71.71</td><td class="num">52.42</td><td class="num">66.81</td></tr>
+  <tr><td>Visual Grounding</td><td class="num">74.15</td><td class="num">74.19</td><td class="num">78.84</td></tr>
+  <tr><td><strong>Overall</strong></td><td class="num">76.95</td><td class="num">72.65</td><td class="num">76.36</td></tr>
+</table></div>
+
+<p><strong>The primary claim is the same-environment one: +4.30 overall</strong> (72.65 → 76.95)
+against the leader's own pipeline, served the same way, scored by the same code on the same corpus —
+apples to apples, no environment caveat.</p>
+
+<p><strong>The published-number comparison carries a caveat and we do not lean on it.</strong> Our
+76.92 exceeds the leader's published 76.36 by +0.56 — but we measure that same pipeline at 72.65 in
+our environment and could never reproduce 76.36 (§2), so those two numbers come from environments
+that demonstrably differ by 3.71 points on identical weights. We state the comparison; the
+same-environment delta is the claim.</p>
+
+<p>Two secondary results, both measured on the full corpus: the fine-tuned Semantic Formatting of
+<strong>71.71</strong> exceeds the best open-weight formatting entry on the public board (69.30) by
++2.41; and on the insurance subset (§7) the fine-tuned model scores <strong>77.60</strong> overall
+against 74.77 for our same-environment reproduction of the leader (+2.83), with insurance-document
+formatting rising from 57.39 to 73.17.</p>
+
+<h2><span class="n">8b</span>How the fine-tune was trained</h2>
+<p>What is trained is a LoRA adapter — low-rank adaptation: all 1.2 billion original weights stay
+frozen and small correction matrices (~24 million parameters, about 2% of the model) are learned on
+the language layers' attention and feed-forward blocks; the vision layers are untouched, because
+localisation was the pipeline's strongest sub-metric and perception was never the problem. Training
+examples are region crops rather than full pages, because the pipeline's text stage only ever sees a
+cropped region; and the prompt in every example is the production string, byte for byte
+(<code>"\nText Recognition:\n"</code>), with the loss computed on the answer tokens only. That last
+choice was forced by measurement: this model is keyed so tightly to its training prompt that every
+prompt variant we tried degraded its bold accuracy monotonically — it can write the markup on
+request but marks the wrong spans. The judgment about where bold lives had to be installed in the
+weights, not requested at run time.</p>
+
+<p>The data is 6,678 region-crop→markdown pairs from two sources plus negatives: 2,165 real
+fragments harvested from SEC EDGAR (the US Securities and Exchange Commission's public filing
+database) insurance-carrier filings, with bold ground truth read from the filings' own HTML; 3,313
+synthetic fragments rendered from markup we control, the sole source of strikethrough, superscript
+and subscript, exact by construction rather than annotated; and 1,200 no-styling negatives with
+plain-text targets, because the measured failure mode of prompting was indiscriminate marking and
+restraint has to be taught. Seven training iterations over one night, ~$31 of GPU. The full method,
+with each design choice traced to the measurement that forced it, is in the companion note
+<code>FINETUNE_METHOD.html</code>. The base model is KoreaDeepLearning's; the weights (adapter and
+merged) are published under AGPL-3.0 — the base model's copyleft license, which requires derivative
+weights to remain open — with attribution, at
+<a href="https://huggingface.co/florin-inc/florin-parser-nano">florin-inc/florin-parser-nano</a>.</p>
 
 <h2><span class="n">9</span>Limitations</h2>
 <ul>
-  <li><strong>The reproduction gap is unexplained.</strong> We account for the formatting deficit's
-  mechanism but not why our run differs from the published one by 3.71 points overall. Two candidate
-  causes — an optional chart normaliser and output truncation — were tested and eliminated.</li>
+  <li><strong>The environment gap is still unexplained.</strong> We account for the formatting
+  deficit's mechanism but not why our runs of the unmodified leader differ from its published row by
+  3.71 points overall. Two candidate causes — an optional chart normaliser and output truncation —
+  were tested and eliminated. Every ranking-adjacent statement therefore leads with the
+  same-environment delta.</li>
+  <li><strong>Two full runs, not more.</strong> The fine-tuned figure rests on N=2 complete runs
+  (76.95, 76.89; |Δ| = 0.06 overall, max per-dimension 0.12). The agreement is tight and passed the
+  preregistered 0.3 tolerance, but no confidence interval can be computed from two samples.</li>
+  <li><strong>The base model is another team's work</strong> — KoreaDeepLearning's, AGPL-3.0. What we
+  publish is an adapter and a method on top of it, attributed as such; nothing here is a claim about
+  training a model from scratch.</li>
+  <li><strong>One unexplained gain is flagged.</strong> The fine-tune's Tables score rose to 86.14
+  (baseline 85.76) without Tables being targeted; a plausible mechanism is real bold in EDGAR table
+  headers, but it is unverified and no claim rests on it.</li>
   <li><strong>The grounding effect is unquantified.</strong> §3 establishes the mechanism, not its
   size, because published artifacts discard the raw labels needed to measure it.</li>
-  <li><strong>Uncertainty.</strong> The submitted figure carries ±0.2; provider-level transfer error is
-  unmeasured on 157 of 476 documents. Two dimensions were verified invariant under our changes rather
-  than recomputed.</li>
   <li><strong>The map-key repair contributes exactly zero</strong> to any number reported here, for the
   reason in §3. It ships because the defect is real by inspection, not because it was measured.</li>
   <li><strong>Insurance sub-scores outside Tables rest on 24–40 pages</strong> and are directional; no
@@ -296,7 +369,10 @@ upstream commit are released. The harness enforces two guarantees and aborts if
 either fails: our re-implementations reproduce the vendored functions byte-for-byte across 2,041
 artifacts, and the patched provider reproduces its replay measurement to ten decimal places through
 the same code path live inference uses. Every figure above is re-derivable without a GPU except the
-pending §4 measurement, which requires one instrumented inference run.</p>
+pending §4 measurement, which requires one instrumented inference run. The fine-tune adds its own
+released artifacts: the training loop, data generators and per-iteration logs, and the weights
+themselves (adapter and merged); reproducing the two full benchmark runs of the fine-tuned model
+requires a GPU.</p>
 
 <hr>
 <p class="fn">Correspondence and corrections welcome. We would rather these defects were fixed than

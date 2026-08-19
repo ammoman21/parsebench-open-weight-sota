@@ -125,16 +125,41 @@
     <span class="stamp">target: Fri 14 Aug</span>
     <span class="stamp">GPU spend to date: ~$4</span>
     <span class="stamp">no training run yet</span>
+    <span class="stamp">OUTCOME 17 Aug: 76.92 — complete (fine-tune night: ~$31 GPU)</span>
   </div>
 </header>
+
+<div class="bbox">
+  <span class="tag">Outcome — added 17 August 2026, campaign complete</span>
+  <span class="big">76.92 &nbsp;vs&nbsp; 76.36</span>
+  <p><strong>Final figure: 76.92</strong>, the mean of two full-corpus runs (76.95 / 76.89,
+  |Δ| = 0.06 overall, max per-dimension 0.12 — passing the preregistered 0.3 tolerance) of
+  <code>florin-parser-nano</code>, our fine-tune of the leader's own model, against the leader's
+  published 76.36. The route below — emission patches, no training — topped out at <strong>74.64</strong>
+  once re-measured under preregistration Amendment 1. What closed the gap was a one-night LoRA
+  fine-tune (low-rank adaptation: base weights frozen, ~24M correction parameters trained) that
+  teaches the model to emit inline formatting, production prompt untouched.</p>
+  <p>The honest primary claim is <strong>same-environment: +4.30</strong> (72.65 → 76.95 head-to-head
+  against the same pipeline, same serving, same scoring). The published-number comparison (+0.56)
+  crosses evaluation environments and carries that caveat. Secondary results: Semantic Formatting
+  <strong>71.71</strong> vs 69.30 for the board's best open-weight formatting entry; insurance subset
+  <strong>77.60</strong> vs 74.77 for the leader reproduced identically. Weights public under
+  AGPL-3.0 with attribution: <code>huggingface.co/florin-inc/florin-parser-nano</code>. Details in
+  <code>FINDINGS_PAPER.html</code> §8–8b and <code>FINETUNE_METHOD.html</code>; run history in
+  <code>LOOP_LOG.md</code>.</p>
+</div>
 
 <section>
   <div class="sec-head"><span class="sec-num">00</span><h2>Where we stand</h2></div>
 
   <div class="bbox">
-    <span class="tag">Measured, full 476-document scoring corpus</span>
+    <span class="tag">Measured, full 476-document scoring corpus — as of 12 Aug; superseded, see Outcome above</span>
     <span class="big">76.79 &nbsp;vs&nbsp; 76.36</span>
     <p>Our patched pipeline against the published score of the open-weight leader, <code>KDL-Frontier-Parser-nano</code> (KoreaDeepLearning; 1.2B parameters, AGPL-3.0). Margin <strong class="up">+0.43</strong> against an estimated ±0.2 transfer uncertainty. Achieved by changing markdown emission only — <strong>no fine-tuning, no GPU training.</strong></p>
+    <p><strong>Superseded 17 Aug:</strong> this 76.79 included a patch member later reclassified as
+    exploitation; the defensible set re-measured at <strong>74.64</strong> (preregistration
+    Amendment 1). The campaign closed at <strong>76.92</strong> via the fine-tune — see the Outcome
+    box above.</p>
   </div>
 
   <p>Five things are simultaneously true, and the tension between them is the decision:</p>
@@ -374,6 +399,19 @@
   </ol>
 
   <p class="fn">Total incremental GPU budget: <strong>~$8–12</strong>. Every analytical step runs on the committed replay harness at zero cost, which is the only reason three days is feasible.</p>
+
+  <div class="bbox">
+    <span class="tag">Plan outcome — added 17 August 2026</span>
+    <p>Preregistration was committed and position (b) chosen. The genuine patch set measured
+    <strong>74.64</strong> (+1.99 over our 72.65 reproduction) — claim tier 2, no ranking claim from
+    patches alone. The plan then extended past Friday into an overnight fine-tuning campaign
+    (7 training iterations, ~$31 GPU, decision tree agreed in advance — <code>LOOP.md</code> /
+    <code>LOOP_LOG.md</code>): a LoRA adapter teaching the model to emit inline formatting with the
+    production prompt byte-identical. Final frozen run <strong>76.95</strong>, confirmation run
+    <strong>76.89</strong> (|Δ| = 0.06, within the preregistered 0.3) → reported mean
+    <strong>76.92</strong> vs the leader's published 76.36, and <strong>+4.30</strong> head-to-head
+    in the same environment. The four defects and the coupling finding ship alongside, as planned.</p>
+  </div>
 </section>
 
 <section>
@@ -396,6 +434,7 @@
 </section>
 
 <hr class="rule">
-<p class="fn"><strong>One line.</strong> We can hold the top open-weight position on a document-parsing benchmark whose table corpus is majority insurance rate filings, without training anything, for ~$12 of remaining compute — and the more durable prize is the four defects and the scorer coupling that getting there uncovered.</p>
+<p class="fn"><strong>One line, as written (12 Aug).</strong> We can hold the top open-weight position on a document-parsing benchmark whose table corpus is majority insurance rate filings, without training anything, for ~$12 of remaining compute — and the more durable prize is the four defects and the scorer coupling that getting there uncovered.</p>
+<p class="fn"><strong>One line, as it ended (17 Aug).</strong> The no-training route honestly measured stopped at 74.64; a one-night LoRA fine-tune of the model itself — production prompt untouched, ~$31 of GPU — closed the campaign at <strong>76.92</strong> (mean of two full runs) against the leader's published 76.36, <strong>+4.30</strong> head-to-head in the same environment, with the four defects and the coupling finding intact as the durable contribution.</p>
 
 </div>
