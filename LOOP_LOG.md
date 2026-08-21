@@ -224,3 +224,32 @@ scored docs: 30 failed: 0
    Note: first teardown attempt failed to the pkill-argv trap AGAIN (self_destruct.sh in ssh
    command string) — third occurrence tonight; heredoc rule is now absolute.
    Night totals: 7 iterations, 3 full-corpus runs, ~$31 GPU, ~9 hours.
+
+## 2026-08-21 — PR #99 MAINTAINER REVIEW: two emission defects confirmed, fixed, both runs
+   replayed. CORRECTED FINAL FIGURE: **76.69** (was 76.92).
+   Defect 1: bold_run_in_labels swallowed list markers into the bold span ("- Note: x" ->
+   "**- Note:** x", list broken; same for numbered items) and, with no fence-state
+   tracking, bolded label-shaped lines INSIDE ```/~~~ fences. Defect 2: the relaxed
+   heading gate dropped the vendored terminal-punctuation veto entirely, promoting short
+   sentences ending in "." to "#" headings. Both reproduced byte-for-byte before fixing.
+   Fixes in ourparser/emission.py (list marker stays outside the span — verified
+   scoreable against the real FormattingRule; fence state tracked; veto restored for
+   ".!?;," i.e. every vendored char except ":"), mirrored into
+   pr_staging/.../florin_parser_nano.py. Tests: ourparser/tests/test_emission.py, 16 new;
+   suite 38 passed (parsebench/.venv).
+   Rescore by replay on identical stored output (scripts/pr99_rescore.py; scorer
+   replication 0 mismatches on every rule-scored split of both runs; it7_confirm
+   recomputed identically by two independent processes):
+     run1 76.95 -> 76.72 | run2 76.89 -> 76.66 | mean 76.92 -> 76.69
+     SemFmt 71.68 -> 70.64 (-1.04) | Charts 65.33 -> 65.19 (-0.14) | CF 87.34 -> 87.37
+     (+0.03) | Tables unchanged (extracted-table identity on all 110/109 changed docs) |
+     Visual Grounding carried (elements untouched by emission).
+   Port identity: staged florin_parser_nano.build_markdown byte-identical to fixed
+   ourparser emission on all 2,078 docs of each run (4,156 docs, 0 mismatches;
+   scripts/pr99_port_identity.py).
+   Claim tier: 76.69 >= 76.36 — tier 1 ranking claim survives, margin 0.33 (was 0.56);
+   same-env +4.04. Insurance-subset figures and the 74.64 patch-only replay row are
+   pre-correction, re-measurement pending (flagged where cited). Docs updated with dated
+   correction notes: PR_BODY, leaderboard.csv+README row (rank 3 -> 4), parsebench.yaml,
+   MODEL_CARD, koreadeep_note, FINDINGS_PAPER, WHITEPAPER, omnidocbench_findings.
+   Full response: reports/pr99_defect_response.md. Nothing pushed/posted/uploaded.

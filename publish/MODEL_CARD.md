@@ -15,23 +15,34 @@ License is AGPL-3.0, inherited from the base.
 
 ## ParseBench results (full corpus, 2,079 documents, all five dimensions measured)
 
+> **Correction, 2026-08-21.** Maintainer review of ParseBench PR #99 found two defects
+> in our markdown emission (list markers swallowed into bold spans; a heading gate that
+> promoted short sentences ending in `.`). Both were fixed and **both full runs were
+> replayed on identical stored model output** with the fixed emission. The table below
+> shows the corrected numbers. Prior reported figures: Overall 76.95/76.89, mean 76.92;
+> Semantic Formatting 71.71/71.66. Net effect of the correction: Semantic Formatting
+> −1.04, Charts −0.14, Content Faithfulness +0.03, Tables and Visual Grounding unchanged.
+
 | Dimension | This model | Base (published) | Base (same environment) |
 |---|---:|---:|---:|
 | Tables | 86.14 | 85.56 | 85.76 |
-| Charts | 65.39 | 63.41 | 63.69 |
-| Content Faithfulness | 87.35 | 87.19 | 87.18 |
-| Semantic Formatting | **71.71** | 66.81 | 52.42 |
+| Charts | 65.25 | 63.41 | 63.69 |
+| Content Faithfulness | 87.38 | 87.19 | 87.18 |
+| Semantic Formatting | **70.66** | 66.81 | 52.42 |
 | Visual Grounding | 74.15 | 78.84 | 74.19 |
-| **Overall** | **76.95** | **76.36** | **72.65** |
+| **Overall** | **76.72** | **76.36** | **72.65** |
 
-Confirmation-run variance: two independent full runs: 76.95 and 76.89 (|Δ| = 0.06 overall; max per-dimension |Δ| = 0.12). Reported figure: mean 76.92..
+Confirmation-run variance: two independent full runs: 76.72 and 76.66 (|Δ| = 0.06 overall; max per-dimension |Δ| = 0.12). Reported figure: mean 76.69.
 Insurance-document subset (384 docs incl. SERFF rate filings, methodology in repo): **77.60**
-vs 74.77 for the base pipeline measured identically.
+vs 74.77 for the base pipeline measured identically — measured before the 2026-08-21
+emission correction; subset re-measurement pending, expect a small downward revision in
+its formatting component.
 
-The honest comparison is the same-environment column: **+4.30 overall** head-to-head.
-The published-number comparison (+0.59) crosses evaluation environments and is reported
-with that caveat. The formatting score exceeds the best open-weight formatting entry on
-the public board (69.30).
+The honest comparison is the same-environment column: **+4.04 overall** head-to-head
+(mean of two runs; run 1 alone is +4.07). The published-number comparison (+0.33 on the
+mean) crosses evaluation environments and is reported with that caveat. The formatting
+score (70.64 mean) exceeds the best open-weight formatting entry on the public board
+(69.30).
 
 ## Training
 

@@ -13,11 +13,25 @@ reproduction repo:
 ("Parity against the published leaderboard — three of five dimensions reproduce, two do not").
 
 Because of that, the honest comparison for this entry is **same-environment,
-head-to-head**: 72.65 → 76.95/76.89 (**+4.30 / +4.24** over the base pipeline measured
-identically). The cross-environment comparison against the published 76.36 (+0.56 on our
-mean) carries the caveat above. **We welcome and expect the maintainers to re-run this
-pipeline in their own environment and to use those numbers for the leaderboard if they
-differ from ours.**
+head-to-head**: 72.65 → 76.72/76.66 (**+4.07 / +4.01** over the base pipeline measured
+identically, mean **+4.04**). The cross-environment comparison against the published
+76.36 (+0.33 on our mean) carries the caveat above. **We welcome and expect the
+maintainers to re-run this pipeline in their own environment and to use those numbers
+for the leaderboard if they differ from ours.**
+
+## Changelog — 2026-08-21 correction after maintainer review
+
+Maintainer review of this PR found two defects in our markdown emission: the run-in
+label bolder swallowed list markers into the bold span (`- Note: x` → `**- Note:** x`,
+breaking the list) and, lacking fence-state tracking, bolded label-shaped lines inside
+code/LaTeX fences; and the relaxed heading gate dropped the stock terminal-punctuation
+veto entirely, promoting ordinary short sentences ending in `.` to headings. Both are
+fixed in the provider module (with tests), and **both submitted runs were replayed on
+identical stored model output** with the fixed emission and re-scored with the repo's
+own rule classes. Net effect: **Semantic Formatting −1.04** (71.68 → 70.64 mean),
+Charts −0.14, Content Faithfulness +0.03, Tables and Visual Grounding unchanged —
+**Overall 76.92 → 76.69**. All numbers below are the corrected ones; the prior row was
+76.92 / 86.10 / 65.33 / 87.34 / 71.69 / 74.15.
 
 ## What this entry is
 
@@ -46,10 +60,14 @@ and documented in its docstring:
    headings are unreachable);
 2. derive heading depth 1–4 from each Title's bounding-box height rank (currently every
    heading is `# `);
-3. bold paragraph-leading `Label:` runs (bold in source documents, dropped by the current
-   emission);
-4. relax the standalone-heading gate by dropping two vetoes that reject genuine headings
-   like "Notes:", with a 20-word cap.
+3. bold paragraph- and list-item-leading `Label:` runs (bold in source documents,
+   dropped by the current emission); list markers stay outside the span
+   (`- **Note:** x`) and fence interiors are never touched (fence state tracked —
+   corrected 2026-08-21 after maintainer review);
+4. relax the standalone-heading gate: drop the label/value veto that rejects genuine
+   headings like "Notes:", keep the terminal-punctuation veto for `.!?;,` (every stock
+   character except `:` — corrected 2026-08-21 after maintainer review; the original
+   dropped it entirely), with a 20-word cap.
 
 The `pages` payload (category / bounding box / text per element) is left exactly as the
 inherited pipeline produced it, so the Visual Grounding dimension is computed from
@@ -64,11 +82,15 @@ Two independent full runs; leaderboard row uses the mean.
 | Dimension | Run 1 | Run 2 | Mean (submitted) |
 |---|---:|---:|---:|
 | Tables | 86.14 | 86.05 | 86.10 |
-| Charts | 65.39 | 65.27 | 65.33 |
-| Content Faithfulness | 87.35 | 87.33 | 87.34 |
-| Semantic Formatting | 71.71 | 71.66 | 71.69 |
-| Visual Grounding | 74.15 | 74.14 | 74.15 |
-| **Overall** | **76.95** | **76.89** | **76.92** |
+| Charts | 65.25 | 65.13 | 65.19 |
+| Content Faithfulness | 87.38 | 87.36 | 87.37 |
+| Semantic Formatting | 70.66 | 70.62 | 70.64 |
+| Visual Grounding | 74.15 | 74.14 | 74.14 |
+| **Overall** | **76.72** | **76.66** | **76.69** |
+
+(Corrected 2026-08-21 — see the changelog above. Run columns are the two full runs
+replayed on their own stored model output with the fixed emission; Tables and Visual
+Grounding are the runs' stored values, both proven unaffected by the emission fixes.)
 
 Run-to-run variance: |Δ| = 0.06 Overall, max per-dimension |Δ| = 0.12. Scoring used the
 repo's default configuration (rule-based judge; `LLAMACLOUD_BENCH_LLM_NORMALIZATION`
@@ -121,7 +143,9 @@ https://github.com/ammoman21/parsebench-open-weight-sota
   byte-identical to `scripts/update_readme.py` output except that script reformats the
   pre-existing Pulse Ultra 2 cost cell `15¢` → `15.00¢`)
 
-Verification we ran before submitting: the in-repo emission port was replayed against all
-2,077 element-bearing stored documents from our full runs and produces byte-identical
-markdown to the code that generated the submitted scores; provider import, registration,
-config-error path, and binding restore are exercised the same way.
+Verification (re-run 2026-08-21 after the emission fixes): the in-repo emission port was
+replayed against all 2,078 stored documents of each of the two full runs (4,156
+documents total) and produces byte-identical markdown — whole document and every
+per-page record — to the fixed reference emission the corrected scores were measured
+with (0 mismatches); provider import, registration, config-error path, and binding
+restore are exercised the same way.

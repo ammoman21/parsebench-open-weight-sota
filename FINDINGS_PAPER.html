@@ -102,11 +102,28 @@ same environment</p>
   Fine-tuning the model itself — a LoRA adapter (low-rank adaptation: the original weights stay
   frozen and small correction matrices, ~2% of the model, are trained on top) that teaches it to
   emit the inline formatting its prompts never request, production prompt unchanged — reaches
-  <strong>76.95 and 76.89 on two full runs (mean 76.92)</strong>: +4.30 over the same pipeline in
+  <strong>76.72 and 76.66 on two full runs (mean 76.69)</strong>: +4.04 over the same pipeline in
   the same environment, which is our primary claim, and above the leader's published 76.36, a
   comparison we report only with the caveat that we could not reproduce that published number. All
   measurement code, saved measurement records, training code, weights and pinned upstream commits
   are released.</p>
+</div>
+
+<div class="tw" style="border:1px solid #b00; padding:0.8em; margin:1em 0;">
+<p><strong>Correction — 2026-08-21.</strong> A ParseBench maintainer's review of our submission PR
+(#99) found two defects in our markdown emission: the run-in-label bolder swallowed list markers
+into the bold span (<code>- Note: x</code> → <code>**- Note:** x</code>, breaking the list) and,
+lacking fence-state tracking, bolded label-shaped lines inside code/LaTeX fences; and the relaxed
+heading gate dropped the stock terminal-punctuation veto entirely, promoting ordinary short
+sentences ending in <code>.</code> to headings. Part of the previously reported Semantic Formatting
+score was therefore coupled to corrupted markup that the scorer still credited. Both defects are
+fixed, and <strong>both full runs were replayed on identical stored model output</strong> with the
+fixed emission and re-scored with the benchmark's own rule classes: Semantic Formatting −1.04
+(71.68 → 70.64 mean), Charts −0.14, Content Faithfulness +0.03, Tables and Visual Grounding
+unchanged; <strong>Overall 76.92 → 76.69</strong> (runs 76.72 / 76.66). Every fine-tuned figure in
+this document has been updated to the corrected values; figures previously reported were
+76.95 / 76.89 (mean 76.92) and Semantic Formatting 71.71. The patch-only replay row (74.64) was
+measured with the pre-fix emission and is pending re-measurement; it is flagged where cited.</p>
 </div>
 
 <h2><span class="n">1</span>Contributions</h2>
@@ -275,12 +292,14 @@ re-ran the complete benchmark, live, twice.</p>
   own default metric per dimension). The patch-only row is measured by replay; the fine-tuned rows
   are complete live inference runs. Two runs of the fine-tuned model agree to |Δ| = 0.06 overall
   (max per-dimension difference 0.12), passing the preregistered 0.3 tolerance; the reported figure
-  is their mean, <b>76.92</b>.</caption>
+  is their mean, <b>76.69</b> (corrected 2026-08-21, see the correction note above; the fine-tuned
+  rows are the two live runs replayed on their own stored output with the fixed emission; the
+  patch-only row is pre-correction and pending re-measurement).</caption>
   <tr><th>Configuration</th><th class="num">Sem. Fmt</th><th class="num">Charts</th><th class="num">Overall</th><th class="num">vs our baseline</th></tr>
   <tr><td>Our reproduction of the leader</td><td class="num">52.42</td><td class="num">63.69</td><td class="num">72.65</td><td class="num">—</td></tr>
-  <tr><td>Patch-only (defect repairs, no training)</td><td class="num">61.20</td><td class="num">64.95</td><td class="num">74.64</td><td class="num up">+1.99</td></tr>
-  <tr><td><strong>Fine-tuned, full run 1</strong></td><td class="num">71.71</td><td class="num">65.39</td><td class="num">76.95</td><td class="num up">+4.30</td></tr>
-  <tr><td>Fine-tuned, confirmation run 2</td><td class="num"></td><td class="num"></td><td class="num">76.89</td><td class="num up">+4.24</td></tr>
+  <tr><td>Patch-only (defect repairs, no training; pre-correction emission)</td><td class="num">61.20</td><td class="num">64.95</td><td class="num">74.64</td><td class="num up">+1.99</td></tr>
+  <tr><td><strong>Fine-tuned, full run 1</strong></td><td class="num">70.66</td><td class="num">65.25</td><td class="num">76.72</td><td class="num up">+4.07</td></tr>
+  <tr><td>Fine-tuned, confirmation run 2</td><td class="num">70.62</td><td class="num">65.13</td><td class="num">76.66</td><td class="num up">+4.01</td></tr>
 </table></div>
 
 <div class="tw"><table>
@@ -288,28 +307,30 @@ re-ran the complete benchmark, live, twice.</p>
   same-environment baseline and the leader's published row.</caption>
   <tr><th>Dimension</th><th class="num">Fine-tuned</th><th class="num">Our baseline</th><th class="num">Published leader</th></tr>
   <tr><td>Tables</td><td class="num">86.14</td><td class="num">85.76</td><td class="num">85.56</td></tr>
-  <tr><td>Charts</td><td class="num">65.39</td><td class="num">63.69</td><td class="num">63.41</td></tr>
-  <tr><td>Content Faithfulness</td><td class="num">87.35</td><td class="num">87.18</td><td class="num">87.19</td></tr>
-  <tr><td>Semantic Formatting</td><td class="num">71.71</td><td class="num">52.42</td><td class="num">66.81</td></tr>
+  <tr><td>Charts</td><td class="num">65.25</td><td class="num">63.69</td><td class="num">63.41</td></tr>
+  <tr><td>Content Faithfulness</td><td class="num">87.38</td><td class="num">87.18</td><td class="num">87.19</td></tr>
+  <tr><td>Semantic Formatting</td><td class="num">70.66</td><td class="num">52.42</td><td class="num">66.81</td></tr>
   <tr><td>Visual Grounding</td><td class="num">74.15</td><td class="num">74.19</td><td class="num">78.84</td></tr>
-  <tr><td><strong>Overall</strong></td><td class="num">76.95</td><td class="num">72.65</td><td class="num">76.36</td></tr>
+  <tr><td><strong>Overall</strong></td><td class="num">76.72</td><td class="num">72.65</td><td class="num">76.36</td></tr>
 </table></div>
 
-<p><strong>The primary claim is the same-environment one: +4.30 overall</strong> (72.65 → 76.95)
-against the leader's own pipeline, served the same way, scored by the same code on the same corpus —
-apples to apples, no environment caveat.</p>
+<p><strong>The primary claim is the same-environment one: +4.04 overall</strong> (72.65 → 76.69
+mean; run 1 alone 72.65 → 76.72, +4.07) against the leader's own pipeline, served the same way,
+scored by the same code on the same corpus — apples to apples, no environment caveat.</p>
 
 <p><strong>The published-number comparison carries a caveat and we do not lean on it.</strong> Our
-76.92 exceeds the leader's published 76.36 by +0.56 — but we measure that same pipeline at 72.65 in
+76.69 exceeds the leader's published 76.36 by +0.33 — but we measure that same pipeline at 72.65 in
 our environment and could never reproduce 76.36 (§2), so those two numbers come from environments
 that demonstrably differ by 3.71 points on identical weights. We state the comparison; the
 same-environment delta is the claim.</p>
 
-<p>Two secondary results, both measured on the full corpus: the fine-tuned Semantic Formatting of
-<strong>71.71</strong> exceeds the best open-weight formatting entry on the public board (69.30) by
-+2.41; and on the insurance subset (§7) the fine-tuned model scores <strong>77.60</strong> overall
-against 74.77 for our same-environment reproduction of the leader (+2.83), with insurance-document
-formatting rising from 57.39 to 73.17.</p>
+<p>Two secondary results: the fine-tuned Semantic Formatting of <strong>70.66</strong> (run 1;
+mean 70.64), measured on the full corpus, exceeds the best open-weight formatting entry on the
+public board (69.30) by +1.36; and on the insurance subset (§7) the fine-tuned model scored
+<strong>77.60</strong> overall against 74.77 for our same-environment reproduction of the leader
+(+2.83), with insurance-document formatting rising from 57.39 to 73.17 — the subset figures were
+measured before the 2026-08-21 emission correction and their re-measurement is pending; expect a
+small downward revision in the formatting component.</p>
 
 <h2><span class="n">8b</span>How the fine-tune was trained</h2>
 <p>What is trained is a LoRA adapter — low-rank adaptation: all 1.2 billion original weights stay
@@ -345,8 +366,9 @@ weights to remain open — with attribution, at
   were tested and eliminated. Every ranking-adjacent statement therefore leads with the
   same-environment delta.</li>
   <li><strong>Two full runs, not more.</strong> The fine-tuned figure rests on N=2 complete runs
-  (76.95, 76.89; |Δ| = 0.06 overall, max per-dimension 0.12). The agreement is tight and passed the
-  preregistered 0.3 tolerance, but no confidence interval can be computed from two samples.</li>
+  (76.72, 76.66 after the 2026-08-21 emission correction; |Δ| = 0.06 overall, max per-dimension
+  0.12). The agreement is tight and passed the preregistered 0.3 tolerance, but no confidence
+  interval can be computed from two samples.</li>
   <li><strong>The base model is another team's work</strong> — KoreaDeepLearning's, AGPL-3.0. What we
   publish is an adapter and a method on top of it, attributed as such; nothing here is a claim about
   training a model from scratch.</li>

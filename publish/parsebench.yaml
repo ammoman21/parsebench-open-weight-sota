@@ -1,15 +1,60 @@
-# .eval_results/parsebench.yaml — for the HF model repo per ParseBench submission docs
-benchmark: parsebench
-model: florin-inc/florin-parser-nano
-results:
-  overall: 76.92  # mean of two full runs (76.95, 76.89)
-  tables: 86.10
-  charts: 65.33
-  content_faithfulness: 87.34
-  semantic_formatting: 71.69
-  visual_grounding: 74.15
-notes: >
-  LoRA fine-tune of KDLAI/KDL-Frontier-Parser-nano with emission patches; full-corpus
-  run, all dimensions measured; chart LLM normaliser off; reproduction repo linked in
-  model card. Two independent full runs: 76.95, 76.89 (delta 0.06).
-community_provided: true
+- dataset:
+    id: llamaindex/ParseBench
+    task_id: mean
+  value: 76.69
+  date: '2026-08-21'
+  source:
+    url: https://huggingface.co/datasets/llamaindex/ParseBench
+    name: ParseBench
+    user: florin-inc
+  notes: "Pipeline name: florin_parser_nano (provider subclass, run-llama/ParseBench PR #99). Mean of two independent full-corpus runs (76.72, 76.66, delta 0.06), all 2,079 files, five dimensions. LoRA fine-tune of KDLAI/KDL-Frontier-Parser-nano (language layers only) plus markdown-emission patches; production prompt unchanged. Chart LLM normaliser off (LLAMACLOUD_BENCH_LLM_NORMALIZATION=off). Same-environment baseline reproduction of kdl_frontier_nano: 72.65. Reproduction repo: https://github.com/ammoman21/parsebench-open-weight-sota. Corrected 2026-08-21 after maintainer review of PR #99 found two markdown-emission defects (list-marker bold capture, over-permissive heading gate); both fixed and both runs replayed on identical stored model output. Prior row: 76.92."
+- dataset:
+    id: llamaindex/ParseBench
+    task_id: table
+  value: 86.10
+  date: '2026-08-21'
+  source:
+    url: https://huggingface.co/datasets/llamaindex/ParseBench
+    name: ParseBench
+    user: florin-inc
+  notes: "Pipeline name: florin_parser_nano (run-llama/ParseBench PR #99)"
+- dataset:
+    id: llamaindex/ParseBench
+    task_id: chart
+  value: 65.19
+  date: '2026-08-21'
+  source:
+    url: https://huggingface.co/datasets/llamaindex/ParseBench
+    name: ParseBench
+    user: florin-inc
+  notes: "Pipeline name: florin_parser_nano (run-llama/ParseBench PR #99)"
+- dataset:
+    id: llamaindex/ParseBench
+    task_id: text_content
+  value: 87.37
+  date: '2026-08-21'
+  source:
+    url: https://huggingface.co/datasets/llamaindex/ParseBench
+    name: ParseBench
+    user: florin-inc
+  notes: "Pipeline name: florin_parser_nano (run-llama/ParseBench PR #99)"
+- dataset:
+    id: llamaindex/ParseBench
+    task_id: text_formatting
+  value: 70.64
+  date: '2026-08-21'
+  source:
+    url: https://huggingface.co/datasets/llamaindex/ParseBench
+    name: ParseBench
+    user: florin-inc
+  notes: "Pipeline name: florin_parser_nano (run-llama/ParseBench PR #99)"
+- dataset:
+    id: llamaindex/ParseBench
+    task_id: layout
+  value: 74.14
+  date: '2026-08-21'
+  source:
+    url: https://huggingface.co/datasets/llamaindex/ParseBench
+    name: ParseBench
+    user: florin-inc
+  notes: "Pipeline name: florin_parser_nano (run-llama/ParseBench PR #99)"

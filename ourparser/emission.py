@@ -53,14 +53,21 @@ THE FOUR CHANGES, AND WHY EACH IS A DEFECT FIX RATHER THAN SCORE-CHASING
 
 (c) `BOLD_RUN_IN_LABELS` — wrap a leading `Label:` run in `**...**`. These runs are
     bold in the source documents and the pipeline drops the markup entirely.
+    FIXED 2026-08-21 after the maintainer's PR #99 review found two emission defects:
+    the label matcher swallowed list markers into the bold span (`- Note: x` became
+    `**- Note:** x`, breaking the list) and, lacking fence state, bolded lines INSIDE
+    ``` code/LaTeX fences. It now emits `- **Note:** x` and never touches fence
+    interiors — see `bold_run_in_labels`.
 
 (d) `RELAXED_TITLE_GATE` — `K._is_titleish` (`K:2489-2508`) decides whether a
     standalone line is promoted to a `# ` heading. It vetoes any line ending in
     `.!?:;,` and any line matching `^.{1,40}:\\s`. Both vetoes reject genuine headings
-    ("1. Scope of Works:", "Notes:"). This change drops those two vetoes only, keeps
-    every other guard including the leading-capital / capitalisation-ratio requirement,
-    and lowers the risk of sweeping in body text by capping promoted lines at 20 words
-    (the shipped cap is 12; an earlier exploration used 30, which we rejected as loose).
+    ("1. Scope of Works:", "Notes:"). As submitted, this change dropped both vetoes,
+    which — PR #99 defect 2 — also promoted ordinary short sentences ending in `.`.
+    FIXED 2026-08-21: the terminal-punctuation veto is restored for `.!?;,` (every
+    vendored character except the colon), the label/value veto stays dropped, every
+    other guard is kept, and promoted lines stay capped at 20 words (the shipped cap
+    is 12; an earlier exploration used 30, which we rejected as loose).
 
 Two further changes are implemented here but are **NOT part of the submitted set**;
 they exist so the "aggressive" comparison in the writeup is measured with the same code
@@ -380,13 +387,19 @@ def is_titleish_relaxed(
     require either a leading capital letter or a capitalisation ratio above
     `caps_ratio`.
 
-    Removed: the "ends with `.!?:;,`" veto (`K:2496-2497`) and the
-    "`^.{1,40}:\\s` looks like a label/value pair" veto (`K:2498-2499`). Both reject
-    genuine headings such as "Notes:" or "3. Scope of works:".
+    Removed: the "`^.{1,40}:\\s` looks like a label/value pair" veto (`K:2498-2499`),
+    which rejects genuine headings such as "3. Scope of works: Phase 2".
+
+    Narrowed (PR #99 fix, 2026-08-21): the vendored terminal-punctuation veto
+    (`_TERMINAL_PUNCT = tuple(".!?:;,")` at `K:2471`, applied at `K:2497`) is restored
+    for every character EXCEPT the colon. The original relaxation dropped the veto
+    entirely, which promoted ordinary short sentences ending in `.` to `# ` headings —
+    defect 2 of the maintainer's PR #99 review. Keeping `:` out of the veto set is the
+    whole point of this component: "Notes:" and "1. Scope of Works:" are genuine
+    headings the vendored gate wrongly rejected.
 
     Replaced: the shipped 12-word cap becomes `word_cap` (20). Raising the cap admits
-    longer headings; leaving it unbounded would sweep in body sentences, which is what
-    the terminal-punctuation veto had been standing in for.
+    longer headings; the restored terminal-punctuation veto keeps body sentences out.
 
     The `max_words` argument is accepted and deliberately ignored so the signature
     matches the vendored gate, which `title_promote` calls positionally.
@@ -403,6 +416,10 @@ def is_titleish_relaxed(
         return False
     if len(s.split()) > word_cap:
         return False
+    # PR #99 fix: the vendored veto minus the colon. A line ending in sentence
+    # punctuation is body text, not a heading; a line ending in `:` may be a heading.
+    if s.endswith(_TERMINAL_PUNCT_NO_COLON):
+        return False
     letters = K._LETTER_RE.findall(s)
     if not letters:
         return False
@@ -412,6 +429,10 @@ def is_titleish_relaxed(
     first_alpha = next((c for c in s if c.isalpha()), "")
     return first_alpha.isupper() or caps_frac > caps_ratio
 
+
+#: The vendored `_TERMINAL_PUNCT` (`K:2471`) with `:` removed — see
+#: `is_titleish_relaxed`.
+_TERMINAL_PUNCT_NO_COLON = tuple(".!?;,")
 
 TitleGate = Callable[[str, int, float, bool], bool]
 
@@ -471,6 +492,11 @@ _HTML_TABLE_SPAN = re.compile(r"<table\b.*?</table>", re.S)
 _PAGE_MARKER = re.compile(r"^\*\*Page\s+\d+\*\*$")
 #: Lines we never touch: heading, pipe-table row, HTML, code fence, image, page rule.
 _SKIP_PREFIXES = ("#", "|", "<", "`", "!", "---")
+#: A code/LaTeX fence marker line — same pattern as the vendored `_FENCE_RE` (`K:2464`).
+_FENCE_LINE = re.compile(r"^\s*(```|~~~)")
+#: A markdown list-item marker: optional indent of at most 3 spaces (4+ is an indented
+#: code block), then a bullet (`-`, `+`, `*`) or a number with `.`/`)`, then whitespace.
+_LIST_PREFIX = re.compile(r"^(\s{0,3}(?:[-+*]|\d{1,3}[.)])\s+)")
 
 
 def _table_line_mask(md: str) -> List[bool]:
@@ -495,23 +521,55 @@ def _skippable(line: str) -> bool:
 
 def bold_run_in_labels(md: str) -> str:
     """
-    Wrap a leading `Label:` run of each paragraph in `**...**`.
+    Wrap a leading `Label:` run of each paragraph or list item in `**...**`.
 
     Never touches a line inside a table, a heading, a code fence, an HTML block, or a
     line that already contains `**` (nesting or splitting an existing bold span would
     break both the markdown and the benchmark's bold matcher, which refuses a span with
     another `**` inside it).
+
+    Two PR #99 fixes (2026-08-21), both maintainer-reported defects:
+
+    1. **List structure is preserved.** The old code matched `_LABEL_RE` against the
+       whole line, so a list item `- Note: x` became `**- Note:** x` — the bullet was
+       swallowed into the bold span, which breaks the list AND emits a span the source
+       never had. Now the list marker is split off first and the label is bolded inside
+       the item: `- **Note:** x`. That form is valid markdown and is accepted by the
+       benchmark's bold matcher, whose `**` arm searches anywhere in the raw content
+       (`parsebench/src/parse_bench/evaluation/metrics/parse/rules_formatting.py:173-200`,
+       pattern at `:194`) — verified directly against `FormattingRule` in this session.
+       Note this also brings `*`-bulleted items into scope: the old whole-line regex
+       excluded them by accident of its first-character class, not by design.
+
+    2. **Fence interiors are never touched.** The old skip test looked at each line in
+       isolation, so it skipped the ``` fence marker itself but happily bolded
+       `E: energy` INSIDE a code or LaTeX fence. Fence state is now tracked across
+       lines with the same marker pattern as the vendored `_FENCE_RE`.
     """
     tbl = _table_line_mask(md)
     out: List[str] = []
+    in_fence = False
     for i, line in enumerate(md.split("\n")):
-        if tbl[i] or _skippable(line) or _HAS_BOLD.search(line):
+        if _FENCE_LINE.match(line):
+            in_fence = not in_fence
             out.append(line)
             continue
-        m = _LABEL_RE.match(line)
+        if in_fence or tbl[i] or _HAS_BOLD.search(line):
+            out.append(line)
+            continue
+        prefix = ""
+        body = line
+        lp = _LIST_PREFIX.match(line)
+        if lp:
+            prefix = lp.group(1)
+            body = line[lp.end() :]
+        if _skippable(body):
+            out.append(line)
+            continue
+        m = _LABEL_RE.match(body)
         if m and len(m.group(1).split()) <= 6:
-            line = f"**{m.group(1)}**{m.group(2)}{line[m.end():]}"
-        out.append(line)
+            body = f"**{m.group(1)}**{m.group(2)}{body[m.end():]}"
+        out.append(prefix + body)
     return "\n".join(out)
 
 
