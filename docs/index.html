@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>florin-parser-nano: Fine-Tuning a 1.2B Open-Weight Vision–Language Model for Insurance Document Parsing</title>
+<style>
+  @page { size: letter; margin: 22mm 24mm 24mm 24mm; }
+  html { -webkit-print-color-adjust: exact; }
+  body {
+    font-family: "Times New Roman", "Times", "Liberation Serif", serif;
+    font-size: 10.6pt; line-height: 1.42; color: #000; margin: 0;
+    text-rendering: optimizeLegibility;
+  }
+  .page { max-width: 168mm; margin: 0 auto; }
+
+  /* ---- title block ---- */
+  .titleblock { text-align: center; margin: 0 0 14pt 0; }
+  h1.title { font-size: 17pt; font-weight: bold; line-height: 1.25; margin: 0 0 10pt 0; }
+  .authors { font-size: 11.5pt; margin: 0 0 2pt 0; }
+  .affil { font-size: 10pt; font-style: italic; margin: 0 0 2pt 0; }
+  .date { font-size: 10pt; margin: 0; }
+
+  /* ---- abstract ---- */
+  .abstract { margin: 12pt 28pt 6pt 28pt; }
+  .abstract .head { text-align: center; font-weight: bold; font-size: 10.5pt; margin-bottom: 4pt; }
+  .abstract p { font-size: 9.8pt; line-height: 1.38; text-align: justify; margin: 0 0 5pt 0; }
+
+  /* ---- sections ---- */
+  h2 { font-size: 12.5pt; font-weight: bold; margin: 15pt 0 6pt 0; page-break-after: avoid; }
+  h3 { font-size: 11pt;  font-weight: bold; font-style: italic; margin: 11pt 0 4pt 0; page-break-after: avoid; }
+  p  { margin: 0 0 7pt 0; text-align: justify; }
+  ul, ol { margin: 0 0 7pt 0; padding-left: 20pt; }
+  li { margin-bottom: 3pt; text-align: justify; }
+  code { font-family: "Courier New", Courier, monospace; font-size: 9.2pt; }
+  sup.fnref { font-size: 7.5pt; }
+  a { color: #000; text-decoration: none; }
+
+  /* ---- tables ---- */
+  table { border-collapse: collapse; margin: 9pt auto 4pt auto; font-size: 9.2pt;
+          page-break-inside: avoid; }
+  caption { caption-side: top; font-size: 9.2pt; text-align: center; margin-bottom: 4pt;
+            font-weight: normal; }
+  caption b { font-weight: bold; }
+  th { border-top: 1.2pt solid #000; border-bottom: 0.6pt solid #000;
+       padding: 2.5pt 6pt; font-weight: bold; text-align: left; }
+  td { padding: 2.2pt 6pt; }
+  tr.last td { border-bottom: 1.2pt solid #000; }
+  tr.rule td { border-top: 0.6pt solid #000; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .tblnote { font-size: 8.6pt; text-align: justify; margin: 2pt auto 9pt auto; max-width: 150mm; }
+
+  /* ---- references ---- */
+  .refs { font-size: 9.2pt; }
+  .refs ol { padding-left: 16pt; }
+  .refs li { margin-bottom: 2.5pt; text-align: left; }
+  .refs code { font-size: 8.8pt; }
+
+  .footrule { border: none; border-top: 0.6pt solid #000; margin: 16pt 0 6pt 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="titleblock">
+  <h1 class="title">florin-parser-nano: Fine-Tuning a 1.2B Open-Weight Vision&ndash;Language Model<br>
+  for Insurance Document Parsing on ParseBench</h1>
+  <p class="authors">ammoman21</p>
+  <p class="affil">Florin</p>
+  <p class="date">September 1, 2026</p>
+</div>
+
+<div class="abstract">
+  <p class="head">Abstract</p>
+  <p>Automated insurance underwriting requires parsing large volumes of visually complex
+  documents&mdash;rate filings, loss runs, policy forms&mdash;into structured, machine-readable text.
+  On ParseBench, a public document-parsing benchmark whose Tables dimension is 57.7% insurance
+  documents, the leading open-weight parser scores 3.73 points lower on insurance tables than on the
+  non-insurance remainder, indicating that this document class is measurably harder than the corpus
+  average for existing systems. We study whether a small open-weight model can be improved on this
+  benchmark through failure-driven fine-tuning. Starting from KDL-Frontier-Parser-nano (1.2B
+  parameters), we first reproduce the published baseline in our own environment, diagnose its dominant
+  failure mode (the model emits no inline formatting markup at all, and prompting cannot fix this),
+  construct 6,678 training pairs from SEC EDGAR insurance-carrier filings and synthetically rendered
+  pages, and train a low-rank adapter on the language layers only, leaving the production prompt
+  byte-identical. The resulting pipeline, <i>florin-parser-nano</i>, scores <b>76.69</b> Overall
+  (mean of two full-corpus runs, 76.72 / 76.66)&mdash;the highest score of any vision&ndash;language
+  model on the leaderboard, open-weight or proprietary, and fifth overall behind four commercial
+  entries. The same-environment improvement over our reproduction of the previous open-weight leader
+  is +4.04 points. Alongside the entry we disclose five benchmark defects (filed upstream as issues
+  #100&ndash;#104), and we document a maintainer-review correction in which two defects in our own
+  emission code were found, fixed, and re-scored on identical model output the same day, revising our
+  score from 76.92 to 76.69. All claims were preregistered before measurement; this is a benchmark
+  study, and the model is not deployed in any production system.</p>
+</div>
+
+<h2>1&nbsp;&nbsp;Introduction</h2>
+
+<p>Florin is building a full-stack insurance company that operates with no human underwriters;
+central to that thesis is software capable of autonomous underwriting. A prerequisite for any such system is
+document parsing at scale: underwriting decisions consume rate filings submitted through SERFF (the
+System for Electronic Rate and Form Filing, the channel through which United States insurance
+carriers file rates with state regulators), loss-run reports, policy forms, actuarial memoranda, and
+insurer financial statements. These documents are dominated by dense, deeply nested tables&mdash;rate
+relativity grids, per-policy rate tables, merged cells spanning rating dimensions&mdash;and by
+meaning-bearing typography: struck-through text marks superseded terms, and superscripts are footnote
+references that change how a figure reads. A parser that silently drops them returns text that is
+complete and misleading.</p>
+
+<p>Public evidence suggests existing systems handle this document class worse than average
+enterprise documents. ParseBench<sup class="fnref">[1]</sup>, a live document-parsing benchmark
+maintained by LlamaIndex, draws 57.7% of its Tables dimension (290 of 503 pages) from insurance
+documents, and our measurement of the benchmark's leading open-weight parser shows it scoring
+<b>84.18</b> on those insurance tables versus <b>87.91</b> on the non-insurance remainder&mdash;a
+3.73-point gap on the largest, most reliable subset in the corpus (Section&nbsp;2.2). The published
+Tables scores on this benchmark are therefore being carried upward by the non-insurance minority,
+not the reverse.</p>
+
+<p>Motivated by this gap, we investigate how far a small open-weight model can be pushed on this
+benchmark by a disciplined loop of baseline reproduction, failure diagnosis, targeted data
+construction, and parameter-efficient fine-tuning. Our contributions are:</p>
+
+<ul>
+  <li>A fine-tuned 1.2B-parameter open-weight parser, <i>florin-parser-nano</i>, scoring 76.69
+  Overall on ParseBench&mdash;the top score in the benchmark's vision&ndash;language-model (VLM)
+  category, ahead of both the best proprietary VLM (Gemini&nbsp;3 Flash, 75.05) and the previous
+  open-weight leader (76.36)&mdash;with weights, training code, and data generators public.</li>
+  <li>A same-environment, preregistered evaluation protocol in which every improvement is measured
+  against our own reproduction of the baseline (72.65), not against published numbers we could not
+  reproduce.</li>
+  <li>Five benchmark and scorer defects disclosed to the maintainers (issues
+  #100&ndash;#104<sup class="fnref">[7]</sup>), plus a documented correction episode in which
+  maintainer review found two defects in our own emission code; both were fixed and re-scored on
+  identical model output the same day (Section&nbsp;5).</li>
+</ul>
+
+<p>Consistent with the public preregistration<sup class="fnref">[5]</sup>, this work is a benchmark
+study conducted for publication. The model was not built for, and is not deployed in, a production
+system.</p>
+
+<h2>2&nbsp;&nbsp;Background: ParseBench</h2>
+
+<h3>2.1&nbsp;&nbsp;What the benchmark measures</h3>
+
+<p>ParseBench scores document parsers over 2,079 annotated pages of enterprise documents using
+169,011 deterministic rule checks. A parser converts each page image (or PDF) to markdown; the
+markdown is graded against per-page annotations across five dimensions, and the Overall score is the
+unweighted mean of the five. Because grading is rule-based (with one optional LLM-judge component
+discussed in Section&nbsp;5), runs are reproducible and inexpensive. Submission is self-serve: a
+pull request adds a results file and provider code to the benchmark repository, and maintainers
+review and re-run entries. At the time of writing the leaderboard holds 88 entries: 57
+vision&ndash;language models (31 open-weight, 26 proprietary), 22 commercial parsing products, and 9
+local open-source tools.</p>
+
+<table>
+<caption><b>Table 1:</b> The five ParseBench dimensions, their metrics, and corpus composition.</caption>
+<tr><th>Dimension</th><th>Metric</th><th class="n">Pages</th><th class="n">Insurance pages</th><th class="n">Insurance share</th></tr>
+<tr><td>Tables</td><td><code>grits_trm_composite</code></td><td class="n">503</td><td class="n">290</td><td class="n"><b>57.7%</b></td></tr>
+<tr><td>Charts</td><td><code>rule_pass_rate</code></td><td class="n">568</td><td class="n">40</td><td class="n">7.0%</td></tr>
+<tr><td>Content Faithfulness</td><td><code>content_faithfulness</code></td><td class="n">506</td><td class="n">25</td><td class="n">4.9%</td></tr>
+<tr><td>Semantic Formatting</td><td><code>semantic_formatting</code></td><td class="n">476</td><td class="n">24</td><td class="n">5.0%</td></tr>
+<tr class="last"><td>Visual Grounding</td><td><code>layout_element_rule_pass_rate</code></td><td class="n">500</td><td class="n">29</td><td class="n">5.8%</td></tr>
+</table>
+<p class="tblnote">Tables: GriTS (grid table similarity, a structural match over rows and columns)
+composited with a record-matching term. Charts: annotated data points must be recovered with correct
+labels. Content Faithfulness: omissions, hallucinations, and reading-order violations at word,
+sentence, and digit granularity (141,322 rules). Semantic Formatting: preservation of
+meaning-bearing inline styling&mdash;bold, strikethrough, super/subscript, headings, LaTeX, code
+fences. Visual Grounding: localization, element classification, and attribution of each extracted
+element to its page region. Page counts and insurance counts from the subset analysis in the
+reproduction repository (<code>reports/insurance_subset_scores.md</code>); some pages appear in
+more than one dimension.</p>
+
+<h3>2.2&nbsp;&nbsp;Corpus composition: an insurance-heavy benchmark</h3>
+
+<p>Three independent passes over the corpus&mdash;filenames, all 169,011 ground-truth rule strings,
+and the text layer of the PDFs&mdash;identify <b>384 of 2,079 documents (18.5%) as insurance</b>,
+with the concentration in exactly the dimension that matters most for document extraction: the
+Tables dimension is majority insurance (193 SERFF rate-filing pages, 78 further pages from auto and
+farm property&ndash;casualty filings, plus Solvency&nbsp;II reports and life-insurer financial
+statements). On our full-corpus baseline run, the leading open-weight parser scored 84.18 on the 290
+insurance table pages versus 87.91 on the 213 non-insurance table pages (&minus;3.73). This is the
+one insurance-subset comparison large enough to support a confident claim; the other four
+dimensions' insurance slices are 24&ndash;40 pages and we treat them as directional only.</p>
+
+<h2>3&nbsp;&nbsp;Method</h2>
+
+<h3>3.1&nbsp;&nbsp;Baseline reproduction and parity discipline</h3>
+
+<p>The base model is <code>KDLAI/KDL-Frontier-Parser-nano</code><sup class="fnref">[3]</sup>
+(KoreaDeepLearning; 1.2B parameters, Qwen2-VL architecture, AGPL-3.0), which held the top open-weight
+position with a published Overall of 76.36. Before changing anything we reproduced its pipeline in
+our own environment: vLLM serving on a single NVIDIA H100 80GB with the pipeline's own documented
+flags, the complete 2,079-file corpus, the benchmark's own evaluation code and default metric per
+dimension, and the chart LLM normalizer disabled and declared
+(<code>LLAMACLOUD_BENCH_LLM_NORMALIZATION=off</code>; see Section&nbsp;5).</p>
+
+<table>
+<caption><b>Table 2:</b> Parity check&mdash;our reproduction of the baseline vs. its published scores.</caption>
+<tr><th>Dimension</th><th class="n">Ours</th><th class="n">Published</th><th class="n">&Delta;</th><th>Status</th></tr>
+<tr><td>Tables</td><td class="n">85.76</td><td class="n">85.56</td><td class="n">+0.20</td><td>reproduced</td></tr>
+<tr><td>Charts</td><td class="n">63.69</td><td class="n">63.41</td><td class="n">+0.28</td><td>reproduced</td></tr>
+<tr><td>Content Faithfulness</td><td class="n">87.18</td><td class="n">87.19</td><td class="n">&minus;0.01</td><td>reproduced</td></tr>
+<tr><td>Semantic Formatting</td><td class="n">52.42</td><td class="n">66.81</td><td class="n">&minus;14.39</td><td>not reproduced</td></tr>
+<tr><td>Visual Grounding</td><td class="n">74.19</td><td class="n">78.84</td><td class="n">&minus;4.65</td><td>not reproduced</td></tr>
+<tr class="rule last"><td><b>Overall</b></td><td class="n"><b>72.65</b></td><td class="n"><b>76.36</b></td><td class="n"><b>&minus;3.71</b></td><td></td></tr>
+</table>
+
+<p>Three of five dimensions reproduce within 0.3 points; two do not, and we could not explain the
+shortfall. A control pipeline (<code>Chandra-ocr-2</code>) run through the identical harness
+reproduced its own published Charts score exactly (65.10) and its Semantic Formatting within 3.17,
+establishing that the harness and scoring are sound and the deficits are specific to the base
+pipeline's behavior in our environment. Two candidate causes were tested and eliminated: the
+optional chart LLM normalizer (scoped to chart metrics only, and our Charts matched) and output
+truncation (zero length-terminated generations across 1,200 saved outputs). The consequence for
+claims is fixed in the preregistration: <b>every improvement is measured against our own 72.65
+reproduction in the same environment</b>; the comparison to the published 76.36 crosses evaluation
+environments and is always reported with that caveat.</p>
+
+<h3>3.2&nbsp;&nbsp;Failure diagnosis</h3>
+
+<p>Across 23,802 recognized elements from 1,196 documents, the base pipeline emits <b>zero</b>
+inline formatting markup&mdash;no bold, strikethrough, superscript, or subscript markers of any
+kind. Its instruction set is five bare prompt strings (e.g. <code>"\nText Recognition:\n"</code>)
+with no formatting request anywhere, so 100% of its Semantic Formatting bold credit arrives through
+an indirect scorer path (headings render bold; see Section&nbsp;5). Of the scored bold failures,
+63.3% are text merged inline into a longer output line: the characters are present but not
+separable, so no post-processing can reach them&mdash;only the model marking spans at generation
+time can.</p>
+
+<p>Prompting cannot supply this behavior. Four prompt variants were measured on a 40-document
+development subset against the byte-exact production prompt as control: the model <i>can</i> emit
+markers when asked (1,729 markers under the most explicit variant, versus zero under control), but
+it marks the wrong spans, and its bold sub-score degrades monotonically with the amount of prompt
+perturbation (60.59 &rarr; 58.96 &rarr; 56.94 &rarr; 55.24). All four variants scored at or below
+control Overall. Two design decisions follow directly: the thing to train is span-level
+<i>judgment</i>, not marker syntax; and training must leave the production prompt byte-identical,
+because the model is brittle to any prompt change.</p>
+
+<h3>3.3&nbsp;&nbsp;Training data: EDGAR fragments and synthetic rendering</h3>
+
+<p>We built 6,678 region-crop&rarr;markdown training pairs from two sources, neither of which
+touches ParseBench's annotations (which are the test set; using them would be contamination):</p>
+
+<ul>
+  <li><b>2,165 real fragments from SEC EDGAR</b> (the U.S. Securities and Exchange Commission's
+  public filing system<sup class="fnref">[8]</sup>) insurance-carrier filings. Because EDGAR filings
+  exist as HTML, bold ground truth is derived mechanically from the document object model rather
+  than annotated by hand.</li>
+  <li><b>3,313 synthetic rendered fragments</b>: business-document pages generated in HTML/CSS with
+  known bold runs, strikethrough amendments, and superscript/subscript footnote references, rendered
+  to images at pipeline resolution&mdash;so the target markdown is exact by construction. This is
+  the sole source of strikethrough and super/subscript supervision, and includes CJK newsprint and
+  Devanagari textures to match the corpus's multilingual pages.</li>
+  <li><b>1,200 no-styling negatives</b> whose correct output contains no markers, to teach restraint:
+  the measured failure mode of explicit prompting was indiscriminate marking, and without negatives a
+  fine-tune reproduces it.</li>
+</ul>
+
+<h3>3.4&nbsp;&nbsp;Fine-tuning configuration</h3>
+
+<p>We trained a LoRA adapter (low-rank adaptation<sup class="fnref">[9]</sup>: the base weights stay
+frozen and small low-rank correction matrices are trained) with rank 16 on the language model's
+attention and MLP layers only; the vision tower and the vision&ndash;language projector are frozen.
+The loss is completion-only (computed on the target markdown, not the prompt), and the prompt is
+byte-identical to the production pipeline's <code>"\nText Recognition:\n"</code>. Training ran 2
+epochs at learning rate 5e-5 in bfloat16 on a single H100, roughly 50 minutes per run. The full
+campaign was 7 training iterations selected on the 40-document development subset (never on the
+benchmark's published leaderboard), about 9 hours and $31 of GPU time end to end, followed by the
+two preregistered full-corpus runs.</p>
+
+<h3>3.5&nbsp;&nbsp;Emission layer</h3>
+
+<p>Every VLM entry on ParseBench is scored on markdown produced jointly by the model and declared
+provider code in the benchmark repository&mdash;the code that converts the model's per-element
+output (category, bounding box, text) into the final markdown string. Our entry is no exception, and
+we state its emission layer plainly: the scored output is the fine-tuned model <i>plus</i> the
+provider <code>florin_parser_nano.py</code> submitted in PR&nbsp;#99<sup class="fnref">[6]</sup>,
+which carries three emission changes relative to the base pipeline's provider, each preregistered as
+a defect fix or a real inference the pipeline was not making:</p>
+
+<ul>
+  <li>heading levels derived from title-element bounding-box height (the base pipeline performs no
+  hierarchy inference; every heading collapses to a single level);</li>
+  <li>bold applied to run-in <code>Label:</code> prefixes, which are bold in the source documents
+  and dropped by the base pipeline;</li>
+  <li>a relaxed heading gate that stops rejecting genuine headings ending in a colon, with a
+  preregistered 20-word length cap.</li>
+</ul>
+
+<p>A fourth preregistered fix (a missing <code>section_header</code> key in the base pipeline's
+category map, dead code confirmed by zero occurrences across 2,078 artifacts) ships in the provider
+but is excluded from all arithmetic, because replay cannot measure its contribution. The emission
+patches without any fine-tuning were measured by replay at 74.64 Overall (+1.99 over the 72.65
+reproduction; a pre-correction replay figure, re-measurement pending)&mdash;short of the published
+leader, which is why the fine-tune, not the emission layer, is the substance of this entry. The
+final emission code is exactly the version corrected after maintainer review (Section&nbsp;5.2).</p>
+
+<h3>3.6&nbsp;&nbsp;Preregistration</h3>
+
+<p>Before any measured run we committed a public preregistration<sup class="fnref">[5]</sup> fixing
+the base model, serving flags, corpus, metrics, run protocol (one validation run, one frozen
+confirmation run, tolerance 0.3 Overall between them), kill criteria (any change costing more than
+0.3 on Tables, Content Faithfulness, or Visual Grounding is dropped regardless of gains elsewhere),
+and three claim tiers tied to score thresholds. One dated amendment corrected a mischaracterization
+in the original document before any live run and re-measured the affected figures; the amendment is
+preserved verbatim alongside the original text.</p>
+
+<h2>4&nbsp;&nbsp;Results</h2>
+
+<p>All numbers in this section are the corrected values after the maintainer-review episode of
+Section&nbsp;5.2; the pre-correction values are reported there.</p>
+
+<table>
+<caption><b>Table 3:</b> ParseBench scores of florin-parser-nano (two full-corpus runs and their mean)
+against the base model's published row and our same-environment reproduction of it.</caption>
+<tr><th>Dimension</th><th class="n">Run 1</th><th class="n">Run 2</th><th class="n">Mean</th><th class="n">Base (published)</th><th class="n">Base (same env.)</th></tr>
+<tr><td>Tables</td><td class="n">86.14</td><td class="n">86.05</td><td class="n">86.10</td><td class="n">85.56</td><td class="n">85.76</td></tr>
+<tr><td>Charts</td><td class="n">65.25</td><td class="n">65.13</td><td class="n">65.19</td><td class="n">63.41</td><td class="n">63.69</td></tr>
+<tr><td>Content Faithfulness</td><td class="n">87.38</td><td class="n">87.36</td><td class="n">87.37</td><td class="n">87.19</td><td class="n">87.18</td></tr>
+<tr><td>Semantic Formatting</td><td class="n">70.66</td><td class="n">70.62</td><td class="n">70.64</td><td class="n">66.81</td><td class="n">52.42</td></tr>
+<tr><td>Visual Grounding</td><td class="n">74.15</td><td class="n">74.14</td><td class="n">74.14</td><td class="n">78.84</td><td class="n">74.19</td></tr>
+<tr class="rule last"><td><b>Overall</b></td><td class="n"><b>76.72</b></td><td class="n"><b>76.66</b></td><td class="n"><b>76.69</b></td><td class="n"><b>76.36</b></td><td class="n"><b>72.65</b></td></tr>
+</table>
+
+<p><b>Same-environment improvement: +4.04 Overall</b> (72.65 &rarr; 76.69), the comparison we
+consider primary because both sides use identical serving, corpus, and scoring. The gain
+decomposes per dimension as Semantic Formatting +18.22, Charts +1.50, Tables +0.34, Content
+Faithfulness +0.19, Visual Grounding &minus;0.05. Against the base model's published row the margin
+is +0.33, reported with the standing caveat that we could not reproduce that published number
+(Section&nbsp;3.1) and that the maintainers' own re-run governs if it lands elsewhere.</p>
+
+<p><b>Two-run agreement.</b> The two independent full-corpus runs differ by 0.06 Overall with a
+maximum per-dimension difference of 0.12&mdash;within the preregistered 0.3 tolerance, so the mean
+is reported as specified in advance.</p>
+
+<h3>4.1&nbsp;&nbsp;Leaderboard position</h3>
+
+<table>
+<caption><b>Table 4:</b> Top of the ParseBench leaderboard at submission (from the benchmark's own
+top-10 table). ¢/page as published; open-weight models are self-hosted.</caption>
+<tr><th class="n">Rank</th><th>Entry</th><th>Category</th><th class="n">Overall</th><th class="n">¢&nbsp;/&nbsp;page</th></tr>
+<tr><td class="n">1</td><td>LlamaParse Agentic Plus</td><td>Commercial (LlamaParse)</td><td class="n">90.20</td><td class="n">5.62</td></tr>
+<tr><td class="n">2</td><td>LlamaParse Agentic</td><td>Commercial (LlamaParse)</td><td class="n">87.01</td><td class="n">1.25</td></tr>
+<tr><td class="n">3</td><td>LlamaParse Cost Effective</td><td>Commercial (LlamaParse)</td><td class="n">80.61</td><td class="n">0.38</td></tr>
+<tr><td class="n">4</td><td>Pulse Ultra 2</td><td>Commercial (startup API)</td><td class="n">77.08</td><td class="n">15.00</td></tr>
+<tr><td class="n">5</td><td><b>florin-parser-nano (ours)</b></td><td><b>VLM &ndash; Open Weight</b></td><td class="n"><b>76.69</b></td><td class="n">&mdash;</td></tr>
+<tr><td class="n">6</td><td>KDL-Frontier-Parser-nano</td><td>VLM &ndash; Open Weight</td><td class="n">76.36</td><td class="n">&mdash;</td></tr>
+<tr><td class="n">7</td><td>Extend (2.0)</td><td>Commercial (startup API)</td><td class="n">75.33</td><td class="n">2.50</td></tr>
+<tr><td class="n">8</td><td>Google Gemini 3 Flash (Thinking High)</td><td>VLM &ndash; Proprietary</td><td class="n">75.05</td><td class="n">2.41</td></tr>
+<tr><td class="n">9</td><td>Infinity-Parser2-Pro</td><td>VLM &ndash; Open Weight</td><td class="n">74.28</td><td class="n">&mdash;</td></tr>
+<tr class="last"><td class="n">10</td><td>Extend Light (1.0)</td><td>Commercial (startup API)</td><td class="n">73.26</td><td class="n">0.62</td></tr>
+</table>
+
+<p>florin-parser-nano is, at submission: <b>the highest-scoring vision&ndash;language model on the
+board of any kind</b>, open-weight or proprietary&mdash;the best proprietary VLM is Gemini&nbsp;3
+Flash (Thinking High) at 75.05, 1.64 points behind; <b>the highest-scoring open-weight entry</b>,
+0.33 ahead of the base model it was fine-tuned from (76.36); and <b>fifth overall</b>, behind four
+commercial product entries&mdash;three configurations of LlamaParse (90.20, 87.01, 80.61), which is
+the benchmark maintainers' own product line, and Pulse Ultra&nbsp;2 (77.08). Its Semantic
+Formatting score of 70.64 also exceeds the best other open-weight formatting entry on the board
+(69.30).</p>
+
+<h2>5&nbsp;&nbsp;Findings: benchmark defects and the correction episode</h2>
+
+<h3>5.1&nbsp;&nbsp;Five defects disclosed upstream (issues #100&ndash;#104)</h3>
+
+<p>Working at parity depth surfaced defects in the benchmark itself, filed as GitHub issues against
+the benchmark repository<sup class="fnref">[7]</sup>:</p>
+
+<ul>
+  <li><b>#100 &mdash; Chart rule rejects correct extraction on typographic grounds.</b> The chart
+  data-point scorer only credits a chart-title label found in surrounding text if that text is bold,
+  a heading, or a caption; a parser that extracts every data point correctly but renders the title
+  as plain text loses the points.</li>
+  <li><b>#101 &mdash; Zero-weight annotation categories, undocumented.</b> <code>is_italic</code>
+  (655 rules), <code>is_underline</code> (405), and <code>is_mark</code> (88) are annotated in the
+  dataset and evaluated, but contribute to no scored category&mdash;the styling sub-score is built
+  from bold, strikethrough, superscript, and subscript only.</li>
+  <li><b>#102 &mdash; Silent default layout adapter.</b> For a provider key with no registered
+  layout adapter, the registry silently returns a default adapter instead of raising, which makes
+  the intended shape-matching fallback unreachable; a new pipeline can score approximately zero on
+  Visual Grounding with no registry-level error anywhere.</li>
+  <li><b>#103 &mdash; LLM-judge normalization on by default, contradicting the documentation.</b>
+  Chart evaluation applies a Claude-Haiku LLM normalization pass unless an environment variable is
+  explicitly set to off; the README describes evaluation as deterministic and two docstrings state
+  the default is off. (All runs in this paper declare it off.)</li>
+  <li><b>#104 &mdash; Bold&ndash;heading coupling.</b> The bold matcher accepts any heading line
+  containing the annotated text as evidence of bold. Because the base pipeline emits no inline
+  markup, 100% of its bold credit arrives through this route, and the dataset contains zero negative
+  styling rules, so indiscriminate promotion costs nothing inside the dimension. By replay, a
+  markdown-only transformation set containing no bold detection at all measured 75.65
+  Overall&mdash;within 0.71 points of the then-leading published score. We disclosed this instead
+  of submitting it; the measurement and reasoning are in the preregistration's amendment.</li>
+</ul>
+
+<h3>5.2&nbsp;&nbsp;Maintainer review found two defects in our emission code&mdash;the correction</h3>
+
+<p>We report this episode in full because it is evidence the process works. Our entry was submitted
+at Overall 76.92 (run means 76.95 / 76.89). The ParseBench maintainer's review of PR&nbsp;#99 found
+two defects in our markdown emission that inflated Semantic Formatting: (1) the run-in-label bolder
+matched against the whole line, so a list item <code>- Note: x</code> became <code>**- Note:**
+x</code>&mdash;the bullet swallowed into the bold span, the list broken&mdash;and, lacking
+fence-state tracking, it bolded label-shaped lines inside code/LaTeX fences; because the scorer's
+bold matcher searches raw text, the corrupted spans still earned credit; (2) our relaxed heading
+gate had dropped the stock terminal-punctuation veto entirely, promoting short sentences ending in a
+period to headings.</p>
+
+<p>Both defects were reproduced byte-for-byte against the submitted code, fixed, and covered with 16
+new tests (including scorer-acceptance checks against the benchmark's real rule classes) the same
+day. Both submitted runs were then replayed through the fixed emission <b>on identical stored model
+output</b>&mdash;no new inference, so any score change is caused by the emission code alone. The
+replay's validity was checked directly: re-scoring the stored markdown reproduced the stored
+per-document metrics with zero mismatches on every rule-scored split of both runs, and the fixed
+provider port was verified byte-identical to the fixed emission on all 4,156 documents.</p>
+
+<table>
+<caption><b>Table 5:</b> Effect of fixing our own emission defects, re-scored on identical model
+output (mean of both runs).</caption>
+<tr><th>Dimension</th><th class="n">As submitted</th><th class="n">Fixed</th><th class="n">&Delta;</th></tr>
+<tr><td>Tables</td><td class="n">86.10</td><td class="n">86.10</td><td class="n">0.00</td></tr>
+<tr><td>Charts</td><td class="n">65.33</td><td class="n">65.19</td><td class="n">&minus;0.14</td></tr>
+<tr><td>Content Faithfulness</td><td class="n">87.34</td><td class="n">87.37</td><td class="n">+0.03</td></tr>
+<tr><td>Semantic Formatting</td><td class="n">71.68</td><td class="n">70.64</td><td class="n">&minus;1.04</td></tr>
+<tr><td>Visual Grounding</td><td class="n">74.14</td><td class="n">74.14</td><td class="n">0.00</td></tr>
+<tr class="rule last"><td><b>Overall</b></td><td class="n"><b>76.92</b></td><td class="n"><b>76.69</b></td><td class="n"><b>&minus;0.23</b></td></tr>
+</table>
+
+<p>Semantic Formatting drops 1.04 points once corruption no longer earns credit&mdash;consistent in
+sign and locus with the maintainer's own re-run. Tables is provably unchanged (the extracted table
+set is identical on every document whose markdown changed), and Visual Grounding is computed from
+the element payload, which emission never touches. The corrected Overall, 76.69, still clears the
+preregistered top-tier threshold of 76.36, so the ranking claim survives the correction with a
+smaller margin (0.33, previously 0.56); the same-environment improvement becomes +4.04 (previously
++4.30/+4.24 per run). All published artifacts&mdash;leaderboard row, model card, results file, and
+this paper&mdash;carry the corrected numbers with dated correction notes.</p>
+
+<h2>6&nbsp;&nbsp;Limitations</h2>
+
+<ul>
+  <li><b>Two runs, no confidence intervals.</b> The reported score is the mean of N=2 full-corpus
+  runs (spread 0.06 Overall, maximum per-dimension 0.12). The agreement is tight, but no formal
+  uncertainty estimate accompanies it, and the 0.33 margin over the base model's published row is
+  small.</li>
+  <li><b>The emission layer's contribution is not isolated from the weights.</b> The +4.04
+  same-environment gain combines the fine-tuned weights and the three emission patches. A clean
+  decomposition&mdash;base-model output through our emission, and our model's output through the
+  baseline emission&mdash;can be computed entirely by replay on stored outputs at zero GPU cost;
+  it is pending and will be published in the reproduction repository. The patch-only replay figure
+  of 74.64 predates the Section&nbsp;5.2 correction and is likewise pending re-measurement.</li>
+  <li><b>The insurance-subset score of our model is pending re-measurement.</b> Our model's
+  insurance-subset figure was measured before the emission correction, so we do not report it here;
+  the subset scripts re-run mechanically once the corrected reports are in place. The baseline's
+  insurance-vs-other gap (84.18 vs 87.91, Section&nbsp;2.2) is unaffected, as both sides of that
+  comparison come from the same baseline run.</li>
+  <li><b>The cross-environment comparison is unresolved.</b> We measure the base pipeline at 72.65
+  where its published row says 76.36, and could not explain the difference (Section&nbsp;3.1). If
+  the maintainers' environment re-runs our fixed pipeline and lands below ours, their numbers
+  govern&mdash;the pull request states this explicitly.</li>
+  <li><b>Benchmark-specific supervision.</b> The training data targets exactly the styling behaviors
+  ParseBench scores (bold, strikethrough, super/subscript). We built it from real filings and
+  exact-by-construction renders rather than from benchmark annotations, but transfer beyond this
+  benchmark's rule set is unmeasured.</li>
+  <li><b>Not a production system.</b> Per the preregistration, this work is for publication only.
+  No claim is made that this model is used in, or was built for, a deployed underwriting
+  pipeline.</li>
+</ul>
+
+<h2>7&nbsp;&nbsp;Reproducibility</h2>
+
+<p>Everything required to re-derive the numbers in this paper is public:</p>
+
+<ul>
+  <li><b>Reproduction repository</b><sup class="fnref">[5]</sup>: training loop, data generators,
+  EDGAR harvester, evaluation harness, replay scripts, per-iteration logs, the preregistration with
+  its dated amendments, and the defect-response report for the Section&nbsp;5.2 correction.</li>
+  <li><b>Model weights</b><sup class="fnref">[4]</sup>: LoRA adapter and merged weights at
+  <code>florin-inc/florin-parser-nano</code>, AGPL-3.0 (inherited from the base model), with full
+  attribution to KoreaDeepLearning, the results file, and the model card carrying the dated
+  correction note.</li>
+  <li><b>Benchmark entry</b><sup class="fnref">[6]</sup>: PR&nbsp;#99 to the benchmark repository
+  contains the provider code (the declared emission layer), the leaderboard row, and the review
+  thread of the correction episode; issues #100&ndash;#104 contain the defect reports with file and
+  line references.</li>
+  <li><b>Instrument integrity</b>: no file under the upstream benchmark checkout was modified; all
+  changes live in our own provider module. The replay harness reproduces the baseline's stored
+  scores exactly (zero per-document mismatches on every rule-scored split), which is what makes the
+  correction episode's emission-only attribution possible.</li>
+</ul>
+
+<hr class="footrule">
+<div class="refs">
+<p style="font-weight:bold; font-size:10.5pt; margin-bottom:4pt;">References</p>
+<ol>
+  <li>ParseBench (LlamaIndex): <code>https://parsebench.ai</code>; dataset:
+      <code>https://huggingface.co/datasets/llamaindex/ParseBench</code></li>
+  <li>ParseBench benchmark repository: <code>https://github.com/run-llama/ParseBench</code></li>
+  <li>Base model, KDL-Frontier-Parser-nano (KoreaDeepLearning, 1.2B, AGPL-3.0):
+      <code>https://huggingface.co/KDLAI/KDL-Frontier-Parser-nano</code></li>
+  <li>florin-parser-nano weights (adapter + merged, AGPL-3.0):
+      <code>https://huggingface.co/florin-inc/florin-parser-nano</code></li>
+  <li>Reproduction repository and preregistration:
+      <code>https://github.com/ammoman21/parsebench-open-weight-sota</code></li>
+  <li>Submission and review thread: <code>https://github.com/run-llama/ParseBench/pull/99</code></li>
+  <li>Defect reports: <code>https://github.com/run-llama/ParseBench/issues/100</code> through
+      <code>/issues/104</code></li>
+  <li>SEC EDGAR (U.S. Securities and Exchange Commission filing system):
+      <code>https://www.sec.gov/edgar</code></li>
+  <li>Hu et al., "LoRA: Low-Rank Adaptation of Large Language Models," 2021.
+      <code>https://arxiv.org/abs/2106.09685</code></li>
+  <li>SERFF, the NAIC System for Electronic Rate and Form Filing:
+      <code>https://www.serff.com</code></li>
+</ol>
+</div>
+
+</div>
+</body>
+</html>
