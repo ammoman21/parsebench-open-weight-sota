@@ -439,20 +439,16 @@ Formatting trade and its mechanism are disclosed in Section&nbsp;3.7.</p>
 <h3>4.2&nbsp;&nbsp;Leaderboard position</h3>
 
 <table>
-<caption><b>Table 5:</b> Leaderboard as of 2026-08-28 (date of this entry's merge), from the
-benchmark's own top-10 table. ¢/page as published; open-weight models are self-hosted. For board
-movements after the version of record, see the Addendum.</caption>
-<tr><th class="n">Rank</th><th>Entry</th><th>Category</th><th class="n">Overall</th><th class="n">¢&nbsp;/&nbsp;page</th></tr>
-<tr><td class="n">1</td><td>LlamaParse Agentic Plus</td><td>Commercial (LlamaParse)</td><td class="n">90.20</td><td class="n">5.62</td></tr>
-<tr><td class="n">2</td><td>LlamaParse Agentic</td><td>Commercial (LlamaParse)</td><td class="n">87.01</td><td class="n">1.25</td></tr>
-<tr><td class="n">3</td><td>LlamaParse Cost Effective</td><td>Commercial (LlamaParse)</td><td class="n">80.61</td><td class="n">0.38</td></tr>
-<tr><td class="n">4</td><td>Pulse Ultra 2</td><td>Commercial (startup API)</td><td class="n">77.08</td><td class="n">15.00</td></tr>
-<tr><td class="n">5</td><td><b>florin-parser-nano (ours)</b></td><td><b>VLM &ndash; Open Weight</b></td><td class="n"><b>76.69</b></td><td class="n">&mdash;</td></tr>
-<tr><td class="n">6</td><td>KDL-Frontier-Parser-nano</td><td>VLM &ndash; Open Weight</td><td class="n">76.36</td><td class="n">&mdash;</td></tr>
-<tr><td class="n">7</td><td>Extend (2.0)</td><td>Commercial (startup API)</td><td class="n">75.33</td><td class="n">2.50</td></tr>
-<tr><td class="n">8</td><td>Google Gemini 3 Flash (Thinking High)</td><td>VLM &ndash; Proprietary</td><td class="n">75.05</td><td class="n">2.41</td></tr>
-<tr><td class="n">9</td><td>Infinity-Parser2-Pro</td><td>VLM &ndash; Open Weight</td><td class="n">74.28</td><td class="n">&mdash;</td></tr>
-<tr class="last"><td class="n">10</td><td>Extend Light (1.0)</td><td>Commercial (startup API)</td><td class="n">73.26</td><td class="n">0.62</td></tr>
+<caption><b>Table 5:</b> Vision&ndash;language models (VLM categories) on the ParseBench leaderboard as of 2026-08-28, the date of this entry&rsquo;s merge. Multi-stage commercial parsing products are tabulated separately by the benchmark (best at that date: LlamaParse Agentic, 84.88, the maintainers&rsquo; own product) and are excluded here; see Section 2 for the category taxonomy.</caption>
+<tr><th class="n">Rank</th><th>Model</th><th>Weights</th><th class="n">Overall</th><th class="n">Tables</th><th class="n">Charts</th><th class="n">Content F.</th><th class="n">Sem. Fmt</th><th class="n">Visual Gr.</th></tr>
+<tr><td class="n">1</td><td><b>florin-parser-nano (ours)</b></td><td><b>Open weight</b></td><td class="n"><b>76.69</b></td><td class="n">86.10</td><td class="n">65.19</td><td class="n">87.37</td><td class="n">70.64</td><td class="n">74.14</td></tr>
+<tr><td class="n">2</td><td>KDL-Frontier-Parser-nano</td><td>Open weight</td><td class="n">76.36</td><td class="n">85.56</td><td class="n">63.41</td><td class="n">87.19</td><td class="n">66.81</td><td class="n">78.84</td></tr>
+<tr><td class="n">3</td><td>Gemini 3 Flash (Thinking High)</td><td>Proprietary</td><td class="n">75.05</td><td class="n">91.50</td><td class="n">64.79</td><td class="n">90.87</td><td class="n">68.31</td><td class="n">59.77</td></tr>
+<tr><td class="n">4</td><td>Infinity-Parser2-Pro</td><td>Open weight</td><td class="n">74.28</td><td class="n">86.40</td><td class="n">61.30</td><td class="n">89.70</td><td class="n">59.10</td><td class="n">74.90</td></tr>
+<tr><td class="n">5</td><td>Infinity-Parser2-Flash</td><td>Open weight</td><td class="n">73.25</td><td class="n">82.88</td><td class="n">55.56</td><td class="n">89.52</td><td class="n">57.70</td><td class="n">80.61</td></tr>
+<tr><td class="n">6</td><td>MinerU2.5-Pro-2605-1.2B</td><td>Open weight</td><td class="n">72.78</td><td class="n">77.59</td><td class="n">61.64</td><td class="n">87.88</td><td class="n">57.49</td><td class="n">79.30</td></tr>
+<tr><td class="n">7</td><td>Gemini 3 Flash (Thinking Minimal)</td><td>Proprietary</td><td class="n">71.04</td><td class="n">89.85</td><td class="n">64.83</td><td class="n">86.19</td><td class="n">58.35</td><td class="n">55.97</td></tr>
+<tr class="last"><td class="n">8</td><td>Anthropic Fable 5</td><td>Proprietary</td><td class="n">70.78</td><td class="n">89.79</td><td class="n">52.21</td><td class="n">90.02</td><td class="n">72.62</td><td class="n">49.24</td></tr>
 </table>
 
 <p>At its merge on August&nbsp;28, 2026, florin-parser-nano was: <b>the highest-scoring
